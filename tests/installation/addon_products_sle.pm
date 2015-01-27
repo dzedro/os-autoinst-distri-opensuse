@@ -6,7 +6,13 @@ use testapi;
 sub run() {
     my $self = shift;
     assert_screen 'inst-addon', 3;
-    send_key $cmd{"next"}, 1;    # done
+    
+    if (check_var('VIDEOMODE', "text")) {
+        send_key "alt+x", 1;
+    }
+    else {
+        send_key $cmd{"next"}, 1;    # done
+    }
 
     if (check_screen("local-registration-servers", 10)) {
         send_key $cmd{ok};
