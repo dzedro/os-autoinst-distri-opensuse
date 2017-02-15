@@ -126,6 +126,10 @@ sub x11_start_program($$$) {
             };
         }
     }
+    # test responsivnes of xterm to aviod mistyping
+    if ($program =~ 'xterm') {
+        utils::ensure_ready_console;
+    }
 }
 
 sub ensure_installed {
