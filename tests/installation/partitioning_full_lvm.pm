@@ -15,6 +15,52 @@ use warnings;
 use base "y2logsstep";
 use testapi;
 
+sub addpart {
+    my ($role, $size, $format, $mount) = @_;
+    my %part_role = qw(
+      OS alt-o
+      data alt-d
+      swap alt-s
+      raw alt-a
+    );
+    assert_screen "expert-partitioner";
+    send_key $cmd{addpart};
+    if (!get_var('UEFI')) {    # partitioning type does not appear when GPT disk used, GPT is default for UEFI
+        assert_screen "partitioning-type";
+        send_key $cmd{next};
+    }
+
+    assert_screen "partition-size";
+
+    for (1 .. 10) {
+        send_key "backspace";
+    }
+    if ($size) {
+        type_string $size . "mb";
+    }
+    send_key $cmd{next};
+    assert_screen 'partition-role';
+    send_key $part_role{$role};
+    send_key $cmd{next};
+    assert_screen 'partition-format';
+    if (get_var('RAIDLEVEL')) {
+        send_key $cmd{donotformat};
+        send_key 'tab';
+        send_key_until_needlematch 'partition-selected-raid-type', 'down';
+    }
+    else {
+        if ($format) {
+            send_key 'alt-s';
+            send_key 'down' if $format = 'ext2';
+        }
+        if ($mount) {
+            send_key 'alt-m';
+            type_string "$mount";
+        }
+    }
+    send_key $cmd{finish};
+}
+
 sub addlv {
     my ($name, $role, $size) = @_;
     my %lv_role = qw(
@@ -59,24 +105,30 @@ sub run() {
     send_key 'alt-o';            # OK
     assert_screen 'partition-create-new-table';
     send_key 'alt-y';            # yes
-    send_key $cmd{addpart};
-    assert_screen 'partition-type';
-    send_key $cmd{next};
-    assert_screen 'partition-size';
-    send_key $cmd{next};
-    assert_screen 'partition-role';
-    send_key "alt-a";            # Raw Volume
-    send_key $cmd{next};
-    assert_screen 'partition-format';
-    send_key $cmd{encrypt};
-    assert_screen 'partition-lvm-encrypt';
-    send_key $cmd{next};
-    assert_screen 'partition-lvm-password-prompt';
-    send_key 'alt-e';            # select password field
-    type_password;
-    send_key 'tab';
-    type_password;
-    send_key $cmd{finish};
+    if (check_var('ARCH', 's390x')) {
+        addpart('OS' , 500, 'ext2', '/boot');
+        addpart('OS');
+    }
+    else {
+        send_key $cmd{addpart};
+        assert_screen 'partition-type';
+        send_key $cmd{next};
+        assert_screen 'partition-size';
+        send_key $cmd{next};
+        assert_screen 'partition-role';
+        send_key "alt-a";            # Raw Volume
+        send_key $cmd{next};
+        assert_screen 'partition-format';
+        send_key $cmd{encrypt};
+        assert_screen 'partition-lvm-encrypt';
+        send_key $cmd{next};
+        assert_screen 'partition-lvm-password-prompt';
+        send_key 'alt-e';            # select password field
+        type_password;
+        send_key 'tab';
+        type_password;
+        send_key $cmd{finish};
+    }
     assert_screen 'expert-partitioner';
     send_key 'alt-s';            # select System view
     for (1 .. 2) {

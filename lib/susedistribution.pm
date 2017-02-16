@@ -126,7 +126,7 @@ sub x11_start_program($$$) {
             };
         }
     }
-    # test responsivnes of xterm to aviod mistyping
+    # test responsivnes of xterm to avoid mistyping
     if ($program =~ 'xterm') {
         utils::ensure_ready_console;
     }

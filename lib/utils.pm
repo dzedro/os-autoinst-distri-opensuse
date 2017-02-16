@@ -784,6 +784,7 @@ sub ensure_ready_console {
                 assert_script_sudo 'echo ready > term && grep ready term && rm term';
             }
             send_key 'ctrl-c';    # cancel mistyped console checks
+            sleep 2;              # slow down loop
         };
         last unless ($@);
         diag "console is not ready: $@";
