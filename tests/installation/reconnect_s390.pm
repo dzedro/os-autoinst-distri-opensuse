@@ -41,23 +41,25 @@ sub run() {
     }
     else {
         if (get_var('ENCRYPT')) {
-            while (wait_serial('Please enter passphrase*', 300) || die "System couldn't boot") {
-                type_password;
-                sleep 2;
-                send_key 'ret';
-                sleep 2;
-                type_password;
-                sleep 2;
-                send_key 'ret';
-            }
-        }
+            my $password = $testapi::password;
+            my $svirt    = select_console('svirt');
+            my $name     = $svirt->name;
+            $svirt->suspend;
+            type_string "export pty=`virsh dumpxml $name | grep \"console type=\" | sed \"s/'/ /g\" | awk '{ print \$5 }'`\n";
+            type_string "echo \$pty\n";
+            $svirt->resume;
 
-        wait_serial($login_ready, 300) || die "System couldn't boot";
+            wait_serial("Please enter passphrase for disk.*", 100);
+            type_string "echo $password > \$pty\n";
+            wait_serial("Please enter passphrase for disk.*", 100);
+            type_string "echo $password > \$pty\n";
+        }
+        wait_serial($login_ready, 300);
     }
 
     if (!check_var('DESKTOP', 'textmode')) {
         select_console('x11');
     }
 }
-
+1;
 1;
