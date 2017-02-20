@@ -40,6 +40,18 @@ sub run() {
         select_console('iucvconn');
     }
     else {
+        if (get_var('ENCRYPT')) {
+            while (wait_serial('Please enter passphrase*', 300) || die "System couldn't boot") {
+                type_password;
+                sleep 2;
+                send_key 'ret';
+                sleep 2;
+                type_password;
+                sleep 2;
+                send_key 'ret';
+            }
+        }
+
         wait_serial($login_ready, 300) || die "System couldn't boot";
     }
 

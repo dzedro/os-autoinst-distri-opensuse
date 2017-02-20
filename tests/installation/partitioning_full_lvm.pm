@@ -16,31 +16,32 @@ use base "y2logsstep";
 use testapi;
 
 sub addpart {
-    my ($role, $size, $format, $mount) = @_;
+    my (%args) = @_;
+    #my (%args, $role, $size, $format, $mount) = @_;
     my %part_role = qw(
       OS alt-o
       data alt-d
       swap alt-s
       raw alt-a
     );
-    assert_screen "expert-partitioner";
+    assert_screen 'expert-partitioner';
     send_key $cmd{addpart};
     if (!get_var('UEFI')) {    # partitioning type does not appear when GPT disk used, GPT is default for UEFI
-        assert_screen "partitioning-type";
+        assert_screen 'partitioning-type';
         send_key $cmd{next};
     }
 
-    assert_screen "partition-size";
+    assert_screen 'partition-size';
 
-    for (1 .. 10) {
-        send_key "backspace";
-    }
-    if ($size) {
-        type_string $size . "mb";
+    if ($args{size}) {
+        for (1 .. 10) {
+            send_key 'backspace';
+        }
+        type_string $args{size} . 'mb';
     }
     send_key $cmd{next};
     assert_screen 'partition-role';
-    send_key $part_role{$role};
+    send_key $part_role{$args{role}};
     send_key $cmd{next};
     assert_screen 'partition-format';
     if (get_var('RAIDLEVEL')) {
@@ -49,13 +50,29 @@ sub addpart {
         send_key_until_needlematch 'partition-selected-raid-type', 'down';
     }
     else {
-        if ($format) {
-            send_key 'alt-s';
-            send_key 'down' if $format = 'ext2';
+        if ($args{format}) {
+            if ($args{format} eq 'donotformat') {
+                send_key $cmd{donotformat};
+                send_key 'alt-u';
+            }
+            else {
+                send_key 'alt-s';
+                send_key 'down' if $args{format} = 'ext2';
+            }
         }
-        if ($mount) {
+        if ($args{mount}) {
             send_key 'alt-m';
-            type_string "$mount";
+            type_string "$args{mount}";
+        }
+        if ($args{encrypt}) {
+            send_key $cmd{encrypt};
+            assert_screen 'partition-lvm-encrypt';
+            send_key $cmd{next};
+            assert_screen 'partition-lvm-password-prompt';
+            send_key 'alt-e';            # select password field
+            type_password;
+            send_key 'tab';
+            type_password;
         }
     }
     send_key $cmd{finish};
@@ -92,10 +109,13 @@ sub addlv {
 }
 
 sub run() {
+    wait_still_screen;
     send_key $cmd{expertpartitioner};
+    assert_screen 'expert-partitioner';
     for (1 .. 4) {
         send_key 'right';        # select vda hard disk
     }
+    #wait_still_screen;
     send_key 'alt-x';            # expert menu
     send_key 'down';
     wait_still_screen 2;
@@ -106,10 +126,12 @@ sub run() {
     assert_screen 'partition-create-new-table';
     send_key 'alt-y';            # yes
     if (check_var('ARCH', 's390x')) {
-        addpart('OS' , 500, 'ext2', '/boot');
-        addpart('OS');
+        addpart(role => 'OS', size => 500, format => 'ext2', mount => '/boot');
+        addpart(role => 'raw', encrypt => 1);
     }
     else {
+        addpart(role => 'raw', encrypt => 1);
+=head2
         send_key $cmd{addpart};
         assert_screen 'partition-type';
         send_key $cmd{next};
@@ -128,6 +150,7 @@ sub run() {
         send_key 'tab';
         type_password;
         send_key $cmd{finish};
+=cut
     }
     assert_screen 'expert-partitioner';
     send_key 'alt-s';            # select System view
