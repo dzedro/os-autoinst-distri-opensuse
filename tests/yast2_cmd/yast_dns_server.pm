@@ -74,7 +74,7 @@ sub run {
     #Forward server and test lookup
     $self->cmd_handle("forwarders", "add", ip => "10.0.2.3");
     systemctl("start named.service");
-    validate_script_output('dig @localhost www.suse.com +short', sub { /\Q35.156.53.100\E/ });
+    validate_script_output('dig @localhost www.suse.com +short', sub { /\Q35.158.9.232\E/ });
     $self->cmd_handle("forwarders", "remove", ip => "10.0.2.3");
     record_soft_failure("bsc#1151138") if (systemctl("is-active named.service", ignore_failure => 1));
 
