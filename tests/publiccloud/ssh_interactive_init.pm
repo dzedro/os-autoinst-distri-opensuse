@@ -24,7 +24,19 @@ sub run {
     # Create public cloud instance
     my $provider = $self->provider_factory();
     my $instance = $provider->create_instance(check_connectivity => 1);
-    $instance->wait_for_guestregister();
+
+    my $max_retries = 3;
+    for (1 .. $max_retries) {
+        eval {
+            $instance->wait_for_guestregister();
+        };
+        last unless ($@);
+        record_soft_failure 'https://progress.opensuse.org/issues/67825';
+        diag "guestregister failed: $@";
+        diag "Maybe the PC or network is busy. Retry: $_ of $max_retries";
+    }
+    die "guestregister on publiccloud failed (with retries)" if $@;
+
     $args->{my_provider} = $provider;
     $args->{my_instance} = $instance;
 
