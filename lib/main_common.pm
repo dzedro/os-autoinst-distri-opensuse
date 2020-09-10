@@ -937,6 +937,9 @@ sub load_inst_tests {
             if ((uses_qa_net_hardware() && !get_var('FILESYSTEM')) && !get_var("SPECIFIC_DISK") || get_var('SELECT_FIRST_DISK') || get_var("ISO_IN_EXTERNAL_DRIVE")) {
                 loadtest "installation/partitioning_firstdisk";
             }
+            if (get_var('MSDOS')) {
+                loadtest 'installation/partitioning/msdos_partition_table';
+            }
             loadtest "installation/partitioning_finish";
         }
     }
