@@ -25,7 +25,7 @@ use hacluster;
 sub assert_standalone {
     my $drbd_rsc = shift;
 
-    assert_script_run "! drbdadm status $drbd_rsc | grep -iq standalone";
+    assert_script_run "! drbdadm status $drbd_rsc | grep -i standalone";
 }
 
 sub run {
@@ -103,7 +103,7 @@ sub run {
         assert_script_run "drbdadm status $drbd_rsc";
 
         # Run assert_script_run timeout 240 during the long assert_script_run drbd sync
-        assert_script_run "while ! \$(drbdadm status $drbd_rsc | grep -q \"peer-disk:UpToDate\"); do sleep 10; drbdadm status $drbd_rsc; done", 240;
+        assert_script_run "while ! drbdadm status $drbd_rsc | grep 'peer-disk:UpToDate'; do sleep 10; drbdadm status $drbd_rsc; done", 240;
     }
     else {
         diag 'Wait until drbd device is activated on primary node...';
@@ -117,7 +117,7 @@ sub run {
         assert_script_run "drbdadm status $drbd_rsc";
 
         # Run assert_script_run timeout 240 during the long assert_script_run drbd sync
-        assert_script_run "while ! \$(drbdadm status $drbd_rsc | grep -q \"peer-disk:UpToDate\"); do sleep 10; drbdadm status $drbd_rsc; done", 240;
+        assert_script_run "while ! drbdadm status $drbd_rsc | grep 'peer-disk:UpToDate'; do sleep 10; drbdadm status $drbd_rsc; done", 240;
     }
     else {
         diag 'Wait until drbd device is activated on slave node...';
@@ -202,7 +202,7 @@ sub run {
         sleep 5;
 
         # Check the migration / timeout 240 sec it takes some time to update
-        assert_script_run "while ! \$(drbdadm status $drbd_rsc | grep -q \"$drbd_rsc role:Primary\"); do sleep 10; drbdadm status $drbd_rsc; done", 240;
+        assert_script_run "while ! drbdadm status $drbd_rsc | grep \"$drbd_rsc role:Primary\"; do sleep 10; drbdadm status $drbd_rsc; done", 240;
 
         # Check for result
         ensure_resource_running("ms_$drbd_rsc", ":[[:blank:]]*$node_02\[[:blank:]]*[Mm]aster\$");
@@ -228,7 +228,7 @@ sub run {
         sleep 5;
 
         # Check the migration / timeout 240 sec it takes some time to update
-        assert_script_run "while ! \$(drbdadm status $drbd_rsc | grep -q \"$drbd_rsc role:Primary\"); do sleep 10; drbdadm status $drbd_rsc; done", 240;
+        assert_script_run "while ! drbdadm status $drbd_rsc | grep \"$drbd_rsc role:Primary\"; do sleep 10; drbdadm status $drbd_rsc; done", 240;
 
         # Check for result
         ensure_resource_running("ms_$drbd_rsc", ":[[:blank:]]*$node_01\[[:blank:]]*[Mm]aster\$");

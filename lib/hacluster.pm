@@ -68,7 +68,7 @@ our $crm_mon_cmd     = 'crm_mon -R -r -n -N -1';
 our $softdog_timeout = bmwqemu::scale_timeout(60);
 our $prev_console;
 our $join_timeout    = bmwqemu::scale_timeout(60);
-our $default_timeout = bmwqemu::scale_timeout(30);
+our $default_timeout = bmwqemu::scale_timeout(60);
 
 sub exec_csync {
     # Sometimes we need to run csync2 twice to have all the files updated!
@@ -84,7 +84,7 @@ sub add_file_in_csync {
         assert_script_run "[[ -w $conf_file ]]";
 
         # Add the value in conf_file and sync on all nodes
-        assert_script_run "grep -Fq $args{value} $conf_file || sed -i 's|^}\$|include $args{value};\\n}|' $conf_file";
+        assert_script_run "grep -F $args{value} $conf_file || sed -i 's|^}\$|include $args{value};\\n}|' $conf_file";
         exec_csync;
     }
 
@@ -176,7 +176,7 @@ sub is_package_installed {
 
 sub check_rsc {
     my $rsc = shift;
-    my $ret = script_run "$crm_mon_cmd 2>/dev/null | grep -q '\\<$rsc\\>'";
+    my $ret = script_run "$crm_mon_cmd 2>/dev/null | grep '\\<$rsc\\>'";
 
     return (defined $ret and $ret == 0);
 }
@@ -186,7 +186,7 @@ sub ensure_process_running {
     my $starttime = time;
     my $ret       = undef;
 
-    while ($ret = script_run "ps -A | grep -q '\\<$process\\>'") {
+    while ($ret = script_run "ps -A | grep '\\<$process\\>'") {
         my $timerun = time - $starttime;
         if ($timerun < $default_timeout) {
             sleep 5;
@@ -205,7 +205,7 @@ sub ensure_resource_running {
     my $starttime = time;
     my $ret       = undef;
 
-    while ($ret = script_run("crm resource status $rsc | grep -E -q '$regex'", $default_timeout)) {
+    while ($ret = script_run("crm resource status $rsc | grep -E '$regex'", $default_timeout)) {
         my $timerun = time - $starttime;
         if ($timerun < $default_timeout) {
             sleep 5;
@@ -263,7 +263,7 @@ sub rsc_cleanup {
 
     assert_script_run "crm resource cleanup $rsc";
 
-    my $ret = script_run "crm_mon -1 2>/dev/null | grep -Eq \"$rsc.*'not configured'|$rsc.*exit\"";
+    my $ret = script_run "crm_mon -1 2>/dev/null | grep -E \"$rsc.*'not configured'|$rsc.*exit\"";
     if (defined $ret and $ret == 0) {
         # Resource is not cleared, so we need to force cleanup
         # Record a soft failure for this, as a bug is opened
@@ -353,8 +353,8 @@ sub wait_until_resources_started {
     my $ret     = undef;
 
     # Some CRM options can only been added on recent versions
-    push @cmds, "$crm_mon_cmd | grep -iq 'no inactive resources'"                           if is_sle '12-sp3+';
-    push @cmds, "! ($crm_mon_cmd | grep -Eioq ':[[:blank:]]*failed|:[[:blank:]]*starting')" if is_sle '12-sp3+';
+    push @cmds, "$crm_mon_cmd | grep -i 'no inactive resources'"                           if is_sle '12-sp3+';
+    push @cmds, "! ($crm_mon_cmd | grep -Eio ':[[:blank:]]*failed|:[[:blank:]]*starting')" if is_sle '12-sp3+';
 
     # Execute each comnmand to validate that the cluster is running
     # This can takes time, so a loop is a good idea here
@@ -439,7 +439,7 @@ sub check_device_available {
 
     die "Must provide a device for check_device_available" unless (defined $dev);
 
-    while ($tries and $ret = script_run "ls -la $dev") {
+    while ($tries and $ret = script_run "ls -la $dev", 300) {
         --$tries;
         sleep 2;
     }
