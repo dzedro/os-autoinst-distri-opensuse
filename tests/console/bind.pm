@@ -68,6 +68,7 @@ sub run {
     assert_script_run 'sed -i \'s/$dig/$DIG/\' nsupdate/tests.sh' if is_sle('<=12-SP3');
     # no idea what is with rpz on SLE 12 SP3, remove it for now
     assert_script_run 'rm -rf rpz' if is_sle('<=12-SP3');
+    assert_script_run 'rm -rf statistics' if check_var('aarch64', 'aarch64');
     # fix permissions and executables to run the testsuite
     assert_script_run 'chown bernhard:root -R .';
     assert_script_run 'chmod +x *.sh *.pl';
