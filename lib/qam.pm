@@ -22,7 +22,7 @@ use List::Util qw(max first);
 use version_utils 'is_sle';
 
 our @EXPORT
-  = qw(capture_state check_automounter is_patch_needed add_test_repositories ssh_add_test_repositories remove_test_repositories advance_installer_window get_patches check_patch_variables query_smelt  get_incident_packages get_packagebins_in_modules);
+  = qw(capture_state check_automounter is_patch_needed add_test_repositories ssh_add_test_repositories remove_test_repositories advance_installer_window get_patches check_patch_variables query_smelt  get_incident_packages get_packagebins_in_modules repo_is_not_active);
 use constant ZYPPER_PACKAGE_COL    => 1;
 use constant OLD_ZYPPER_STATUS_COL => 4;
 use constant ZYPPER_STATUS_COL     => 5;
@@ -88,6 +88,7 @@ sub add_test_repositories {
     @repos = split(',', $oldrepo) if ($oldrepo);
 
     for my $var (@repos) {
+        next if repo_is_not_active($var);
         zypper_call("--no-gpg-checks ar -f -n 'TEST_$counter' $var 'TEST_$counter'");
         $counter++;
     }
@@ -216,5 +217,12 @@ sub get_packagebins_in_modules {
     return map { $_->{name} => $_ } @arr;
 }
 
+sub repo_is_not_active {
+    my $repo = $_[0];
+    $repo =~ m".+Maintenance\:\/(\d+)";
+    my $id     = $1;
+    my $status = query_smelt("{incidents(incidentId: $id){edges{node{status {name}}}}}");
+    return 1 && record_info('Not added', "$id have been released or declined") if $status =~ /done/;
+}
 
 1;

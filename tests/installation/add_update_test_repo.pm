@@ -14,7 +14,7 @@ use strict;
 use warnings;
 use base 'y2_installbase';
 use testapi;
-use qam 'advance_installer_window';
+use qam qw(advance_installer_window repo_is_not_active);
 
 sub run() {
 
@@ -30,6 +30,7 @@ sub run() {
 
     while (defined(my $maintrepo = shift @repos)) {
         next if $maintrepo =~ /^\s*$/;
+        next if repo_is_not_active($maintrepo);
         assert_screen('addon-menu-active', 60);
         send_key 'alt-u';    # specify url
         wait_still_screen(1);

@@ -28,6 +28,7 @@ use Utils::Architectures qw(is_aarch64 is_ppc64le);
 use Utils::Systemd qw(systemctl disable_and_stop_service);
 use Utils::Backends 'has_ttys';
 use Mojo::UserAgent;
+use qam;
 
 our @EXPORT = qw(
   check_console_font
@@ -516,7 +517,8 @@ sub zypper_call {
         if ($ret == 4) {
             if (script_run('grep "Error code.*502" /var/log/zypper.log') == 0) {
                 die 'According to bsc#1070851 zypper should automatically retry internally. Bugfix missing for current product?';
-            } elsif (my $conflicts = script_output($search_conflicts)) {
+            } elsif (script_run('grep "Solverrun finished with an ERROR" /var/log/zypper.log') == 0) {
+                my $conflicts = script_output($search_conflicts);
                 record_info("Conflict", $conflicts, result => 'fail');
                 diag "Package conflicts found, not retrying anymore" if $conflicts;
                 last;
@@ -524,7 +526,21 @@ sub zypper_call {
             next unless get_var('FLAVOR', '') =~ /-(Updates|Incidents)$/;
         }
         if (get_var('FLAVOR', '') =~ /-(Updates|Incidents)/ && ($ret == 4 || $ret == 8 || $ret == 105 || $ret == 106 || $ret == 139 || $ret == 141)) {
-            if (script_run('grep "Exiting on SIGPIPE" /var/log/zypper.log') == 0) {
+            # remove maintenance update repo which was released or declined
+            if ($ret == 106 || ($ret == 4 && check_var('ARCH', 'aarch64'))) {
+                my @removed;
+                my @repos = split(/,/, get_var('MAINT_TEST_REPO'));
+                while (defined(my $maintrepo = shift @repos)) {
+                    next if $maintrepo =~ /^\s*$/;
+                    my $id = repo_is_not_active($maintrepo);
+                    # id can repeat due to different product, next if repo was removed
+                    next if (grep(/$id/, @removed));
+                    push @removed, $id;
+                    # remove all repositories containing ID
+                    assert_script_run(qq[zypper rr \$(zypper lr -u|awk 'BEGIN {ORS=" "};/$id/{print\$1}')]) if $id =~ /\d{3}\d+/;
+                }
+            }
+            elsif (script_run('grep "Exiting on SIGPIPE" /var/log/zypper.log') == 0) {
                 record_soft_failure 'Zypper exiting on SIGPIPE received during package download bsc#1145521';
             }
             else {
