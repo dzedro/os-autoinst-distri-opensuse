@@ -1,5 +1,5 @@
 
-# Copyright (C) 2019 SUSE LLC
+# Copyright (C) 2019-2021 SUSE LLC
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,8 +27,8 @@ use version_utils qw(is_hyperv is_sle is_sles4sap);
 use main_common 'is_desktop';
 
 sub run {
-
-    select_console 'root-console';
+    my $self = shift;
+    $self->select_serial_terminal;
 
     install_services($default_services)
       if is_sle
