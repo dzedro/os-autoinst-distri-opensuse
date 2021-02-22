@@ -18,6 +18,7 @@ use utils;
 use version_utils qw(is_desktop_installed is_sles4sap is_sle);
 use qam qw(add_test_repositories remove_test_repositories);
 use x11utils 'ensure_unlocked_desktop';
+use registration qw(add_suseconnect_product);
 
 sub run {
     select_console 'root-console';
@@ -38,6 +39,9 @@ sub run {
     }
     diag "SUSEConnect --status-text: $out";
     assert_script_run "SUSEConnect --status-text | grep -v 'Not Registered'" unless get_var('MEDIA_UPGRADE');
+
+    assert_script_run('. /etc/os-release');
+    add_suseconnect_product('ltss', '$VERSION_ID', get_var("ARCH"), " -r " . get_var("SCC_REGCODE_LTSS"), 300, 1) if get_var('SCC_ADDONS') =~ /ltss/;
 
     add_maintenance_repos() if (get_var('MAINT_TEST_REPO'));
 
