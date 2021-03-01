@@ -779,7 +779,7 @@ elsif (get_var('XFSTESTS')) {
         loadtest 'kernel/change_kernel';
     }
     prepare_target;
-    if (is_pvm || check_var('ARCH', 's390x')) {
+    if (is_pvm) {
         loadtest 'xfstests/install';
         unless (check_var('NO_KDUMP', '1')) {
             loadtest 'xfstests/enable_kdump';
@@ -798,6 +798,7 @@ elsif (get_var('XFSTESTS')) {
                 loadtest 'kernel/install_klp_product';
             }
             loadtest 'shutdown/shutdown';
+            loadtest 'shutdown/svirt_upload_assets' if check_var('ARCH', 's390x');
         }
         else {
             loadtest 'xfstests/partition';
