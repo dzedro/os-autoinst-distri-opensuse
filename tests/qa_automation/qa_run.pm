@@ -102,6 +102,10 @@ sub prepare_repos {
 sub start_testrun {
     my $self = shift;
     $self->qaset_config();
+    zypper_call('in qa_test_openssh');
+    assert_script_run('sed -i "s/pidfile$/pidfile \&\& sync/" /usr/share/qa/qa_test_openssh/cfgmatch.sh');
+    assert_script_run('sed -i "s/sleep 100/sleep 10/" /usr/share/qa/qa_test_openssh/cfgmatch.sh');
+    script_output('cat /usr/share/qa/qa_test_openssh/cfgmatch.sh');
     assert_script_run("/usr/share/qa/qaset/qaset reset");
     assert_script_run("/usr/share/qa/qaset/run/kernel-all-run.openqa");
 }
