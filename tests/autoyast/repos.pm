@@ -25,6 +25,7 @@ sub run {
         # poo#87850 wait the zypper processes in background to finish and release the lock.
         wait_quit_zypper;
     }
+    zypper_call 'ref -f';
     zypper_enable_install_dvd;
     # make sure that save_y2logs from yast2 package, tar and bzip2 are installed
     # even on minimal system

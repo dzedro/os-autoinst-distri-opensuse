@@ -36,6 +36,8 @@ sub run {
 
     quit_packagekit unless check_var('DESKTOP', 'textmode');
 
+    zypper_call 'ref -f';
+
     zypper_call(q{mr -d $(zypper lr | awk -F '|' '{IGNORECASE=1} /nvidia/ {print $2}')}, exitcode => [0, 3]);
 
     add_test_repositories;

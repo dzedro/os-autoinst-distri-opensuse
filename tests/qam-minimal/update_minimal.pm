@@ -27,6 +27,8 @@ sub run {
 
     quit_packagekit;
 
+    zypper_call 'ref -f';
+
     capture_state('between-after');
 
     assert_script_run("zypper lr | grep TEST_");

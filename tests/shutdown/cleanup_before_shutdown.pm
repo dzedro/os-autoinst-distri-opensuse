@@ -47,6 +47,7 @@ END_SCRIPT
     if (!get_var('KEEP_QUIET_BOOT') && check_var('FLAVOR', 'JeOS-for-RaspberryPi')) {
         assert_script_run('sed -i -e \'s/ quiet$//\' /boot/grub2/grub.cfg');
     }
+    zypper_call 'ref -f';
 
     prepare_serial_console;
 
