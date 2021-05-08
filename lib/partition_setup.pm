@@ -474,8 +474,9 @@ sub select_first_hard_disk {
         # Not all possible devices are removed, but not sure that we will have more on QA servers
         # We will also have to create new needle when needed
         foreach my $device (@devices) {
-            assert_and_click "hard-disk-dev-$device-selected"
+            wait_screen_change { assert_and_click "hard-disk-dev-$device-selected"
               if ($matched_needle && $matched_needle->{needle}->has_tag("hard-disk-dev-$device-selected"));
+            };
         }
     }
     # Check if sda is still/already selected, if not select it
