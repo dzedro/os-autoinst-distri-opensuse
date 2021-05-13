@@ -24,6 +24,7 @@ use utils qw(addon_decline_license assert_screen_with_soft_timeout zypper_call s
 use version_utils qw(is_sle is_sles4sap is_upgrade is_leap_migration is_sle_micro);
 use constant ADDONS_COUNT => 50;
 use y2_module_consoletest;
+use y2_logs_helper qw(accept_license);
 
 our @EXPORT = qw(
   add_suseconnect_product
@@ -313,9 +314,19 @@ sub register_addons {
             # skip addons which doesn't need to input scc code
             next unless grep { $addon eq $_ } @addons_with_code;
             if (check_var('VIDEOMODE', 'text')) {
+                if (check_screen('license-agreement', 5)) {
+                    record_soft_failure 'bsc#1186047';
+                    accept_license;
+                    send_key $cmd{next};
+                }
                 send_key_until_needlematch("scc-code-field-$addon", 'tab', 60, 3);
             }
             else {
+                if (check_screen('license-agreement', 5)) {
+                    record_soft_failure 'bsc#1186047';
+                    accept_license;
+                    send_key $cmd{next};
+                }
                 assert_and_click("scc-code-field-$addon", timeout => 240);
             }
             # avoid duplicated tests to manage LTSS regcode by integrating new variables
@@ -496,7 +507,7 @@ sub process_scc_register_addons {
         }
         # start addons/modules registration, it needs longer time if select multiple or all addons/modules
         my $counter = ADDONS_COUNT;
-        my @needles = qw(import-untrusted-gpg-key nvidia-validation-failed yast_scc-pkgtoinstall yast-scc-emptypkg inst-addon contacting-registration-server refreshing-repository system-probing);
+        my @needles = qw(import-untrusted-gpg-key nvidia-validation-failed yast_scc-pkgtoinstall yast-scc-emptypkg inst-addon contacting-registration-server refreshing-repository system-probing license-agreement);
         if (is_sle('15-SP2+')) {
             # In SLE 15 SP2 multipath detection happens directly after registration, so using it to detect that all pop-up are processed
             push @needles, 'enable-multipath' if get_var('MULTIPATH');
@@ -507,6 +518,12 @@ sub process_scc_register_addons {
         while ($counter--) {
             die 'Addon registration repeated too much. Check if SCC is down.' if ($counter eq 1);
             assert_screen([@needles], 90);
+            if (match_has_tag('license-agreement')) {
+                record_soft_failure 'bsc#1186047';
+                accept_license;
+                send_key $cmd{next};
+                next;
+            }
             if (match_has_tag('import-untrusted-gpg-key')) {
                 handle_untrusted_gpg_key;
                 next;
