@@ -186,7 +186,7 @@ sub run {
         # temporary hack for sle, due to missing sbsigntools package
         if (is_sle('<=15-sp2') && !is_sle('=15')) {
             (my $version = get_var('VERSION')) =~ s/-/_/g;
-            zypper_call("ar -p 101 --refresh --no-gpgcheck http://download.opensuse.org/repositories/Base:/System/SLE_$version/ sb_signtools");
+            zypper_call("ar -p 101 --refresh --no-gpgcheck https://download.opensuse.org/tumbleweed/repo/oss/ sb_signtools");
         }
     }
     zypper_call "in $pkgs";
