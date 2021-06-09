@@ -1,6 +1,6 @@
 # SUSE's openQA tests
 #
-# Copyright © 2018 SUSE LLC
+# Copyright © 2018-2021 SUSE LLC
 #
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
@@ -21,7 +21,7 @@ use lockapi;
 use y2_module_guitest;
 use mm_network;
 use mmapi 'wait_for_children';
-use utils qw(systemctl zypper_call exec_and_insert_password);
+use utils qw(systemctl zypper_call exec_and_insert_password script_retry);
 use repo_tools 'add_qa_head_repo';
 use strict;
 use warnings;
@@ -84,11 +84,10 @@ client-config-dir ccd" > ca.conf));
     # Start the server
     systemctl('start openvpn@ca');
     systemctl('status openvpn@ca -l');
-    barrier_wait 'OPENVPN_CA_START';
 
     # Test the connection when also the client is ready
     barrier_wait 'OPENVPN_CA_STARTED';
-    assert_script_run("ping -c5 -W1 -I tap0 10.8.0.2");
+    script_retry("ping -c5 -W1 -I tap0 10.8.0.2");
 
     # Stop the server when also client is done
     barrier_wait 'OPENVPN_CA_FINISHED';
