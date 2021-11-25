@@ -36,7 +36,10 @@ sub run {
     # On s390x sometimes the vnc will still be there and the next select_console
     # will create another vnc. This will make the OpenQA have 2 vnc sessions at
     # the same time. We'd cleanup the previous one and setup the new one.
-    assert_script_run 'pkill Xvnc ||:' if !check_var('DESKTOP', 'textmode') && is_s390x;
+    assert_script_run 'while ps aux|grep Xvnc|grep -v grep; do pkill Xvnc; sleep 2; done' if !check_var('DESKTOP', 'textmode') && is_s390x;
+    assert_script_run 'ps aux|grep -E "Xvnc|gdm"' if !check_var('DESKTOP', 'textmode') && is_s390x;
+    assert_script_run('systemctl status display-manager.service');
+    assert_script_run('systemctl restart display-manager.service') if !check_var('DESKTOP', 'textmode') && is_s390x;
     # logout root (and later user) so they don't block logout
     # in KDE
     enter_cmd "exit";
@@ -56,6 +59,12 @@ sub run {
 }
 
 sub post_fail_hook {
+    my $self = shift;
+
+    $self->export_logs();
+}
+
+sub post_run_hook {
     my $self = shift;
 
     $self->export_logs();

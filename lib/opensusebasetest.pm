@@ -460,6 +460,11 @@ sub export_logs {
     $self->remount_tmp_if_ro;
     $self->problem_detection;
 
+    assert_script_run('w -ous');
+    assert_script_run('ll -R /tmp/.X11-unix');
+    assert_script_run('file /tmp/.X11-unix/*');
+    script_run('lsof /tmp/.X11-unix/*');
+
     $self->export_logs_basic;
 
     # Just after the setup: let's see the network configuration
