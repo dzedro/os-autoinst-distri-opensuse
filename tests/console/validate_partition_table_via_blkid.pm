@@ -16,9 +16,13 @@ use scheduler 'get_test_suite_data';
 use filesystem_utils 'get_partition_table_via_blkid';
 
 sub run {
+    my $self = shift;
     select_console('root-console');
     my $errors = '';
     my $disks = get_test_suite_data()->{disks};
+
+    upload_logs('/tmp/gs-log');
+    $self->export_logs_basic;
 
     my $actual;
     foreach my $disk (@{$disks}) {

@@ -1408,6 +1408,9 @@ sub reconnect_mgmt_console {
                 }
             }
             reset_consoles;
+            select_console('root-console');
+            assert_script_run(qq(sed -i 's|Exec=/usr/bin/gnome-software --gapplication-service|Exec=bash -c "/usr/bin/gnome-software --gapplication-service --verbose >\\& /tmp/gs-log"|' /etc/xdg/autostart/gnome-software-service.desktop));
+            assert_script_run('cat /etc/xdg/autostart/gnome-software-service.desktop');
             select_console('x11', await_console => 0);
         }
     }
