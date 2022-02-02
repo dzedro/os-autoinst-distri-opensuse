@@ -90,7 +90,7 @@ Extension (HA or HAE) tests.
 our $crm_mon_cmd = 'crm_mon -R -r -n -N -1';
 our $softdog_timeout = bmwqemu::scale_timeout(60);
 our $prev_console;
-our $join_timeout = bmwqemu::scale_timeout(60);
+our $join_timeout = bmwqemu::scale_timeout(120);
 our $default_timeout = bmwqemu::scale_timeout(30);
 
 # Private functions
@@ -705,8 +705,8 @@ sub wait_until_resources_started {
     my $ret = undef;
 
     # Some CRM options can only been added on recent versions
-    push @cmds, "grep -iq 'no inactive resources' <($crm_mon_cmd)" if is_sle '12-sp3+';
-    push @cmds, "! (grep -Eioq ':[[:blank:]]*failed|:[[:blank:]]*starting' <($crm_mon_cmd))";
+    push @cmds, "grep -i 'no inactive resources' <($crm_mon_cmd)" if is_sle '12-sp3+';
+    push @cmds, "! (grep -Eio ':[[:blank:]]*failed|:[[:blank:]]*starting' <($crm_mon_cmd))";
 
     # Execute each comnmand to validate that the cluster is running
     # This can takes time, so a loop is a good idea here
@@ -715,7 +715,7 @@ sub wait_until_resources_started {
         my $starttime = time;
 
         # Check for cluster/resources status and exit loop when needed
-        while ($ret = script_run("$cmd", $default_timeout)) {
+        while ($ret = script_run("$cmd", $timeout)) {
             # Otherwise wait a while if timeout is not reached
             my $timerun = time - $starttime;
             if ($timerun < $timeout) {
