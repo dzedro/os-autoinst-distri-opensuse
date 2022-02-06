@@ -50,6 +50,11 @@ sub run {
     my $testkit = get_var('SYS_PARAM_CHECK_TEST', "qa-css-hq.qa.suse.de/$robot_tar");
     my $python_bin = is_sle('15+') ? 'python3' : 'python';
 
+    zypper_call('ar -f http://dist.suse.de/ibs/SUSE:/Maintenance:/22317/SUSE_Updates_SLE-Product-SLES_15-SP2-LTSS_x86_64/ 22317') if is_sle('=15-SP2');
+    zypper_call('ar -f http://dist.suse.de/ibs/SUSE:/Maintenance:/22316/SUSE_Updates_SLE-Product-SLES_15-SP1-LTSS_x86_64/ 22316') if is_sle('=15-SP1');
+    zypper_call('up');
+    assert_script_run 'sysctl -p';
+
     # Download and prepare the test environment
     assert_script_run "cd /; curl -f -v \"$testkit\" -o $robot_tar";
     assert_script_run "tar -xzf $robot_tar";
