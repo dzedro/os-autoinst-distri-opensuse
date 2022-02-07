@@ -11,7 +11,7 @@ use base 'sles4sap';
 use strict;
 use warnings;
 use testapi;
-use utils qw(file_content_replace type_string_slow);
+use utils qw(file_content_replace type_string_slow_extended);
 use x11utils qw(turn_off_gnome_screensaver);
 use version_utils qw(package_version_cmp is_sle);
 
@@ -61,7 +61,7 @@ sub run {
     send_key 'ret' if check_var('DESKTOP', 'textmode');
     send_key 'alt-p';
     send_key_until_needlematch 'sap-wizard-inst-master-empty', 'backspace', 30 if check_var('DESKTOP', 'textmode');
-    type_string_slow "$path", wait_still_screen => 1;
+    type_string_slow_extended "$path", wait_still_screen => 2;
     save_screenshot;
     send_key $cmd{next};
     assert_screen 'sap-wizard-copying-media', 120;
