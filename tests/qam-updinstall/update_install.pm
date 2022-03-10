@@ -49,7 +49,12 @@ sub has_conflict {
         'systemtap-sdt-devel' => 'systemtap-headers',
         libldb2 => 'libldb1',
         'python3-ldb' => 'python-ldb',
-        'chrony-pool-suse' => 'chrony-pool-empty'
+        'chrony-pool-suse' => 'chrony-pool-empty',
+        'SAPHanaSR-ScaleOut' => 'SAPHanaSR',
+        'SAPHanaSR-ScaleOut-doc' => 'SAPHanaSR-doc',
+        'dapl-devel' => 'dapl-debug-devel',
+        'libdat2-2' => 'dapl-debug-libs',
+        dapl => 'dapl-debug'
     );
     return $conflict{$binary};
 }
