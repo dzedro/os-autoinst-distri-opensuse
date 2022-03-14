@@ -133,7 +133,7 @@ sub run {
 
     for my $patch (split(/\s+/, $patches)) {
         my %patch_bins = %bins;
-        my (@patch_l2, @patch_l3, @patch_unsupported);
+        my (@patch_l2, @patch_l3, @patch_unsupported, @excluded_conflicts);
         # Check if the patch was correctly configured.
         # Get info about the patch included in the update.
         my @patchinfo = split '\n', script_output("zypper -n info -t patch $patch", 200);
@@ -184,6 +184,7 @@ sub run {
             # Remove binaries conflicting with the ones that are being tested.
             my $conflict = has_conflict($package);
             next unless $conflict;
+            push(@excluded_conflicts, $conflict);
             if ($installable{$conflict}) {
                 record_info "CONFLICT!", "$package conflicts with $conflict. Skipping $conflict.";
                 delete $installable{$conflict};
@@ -231,6 +232,37 @@ sub run {
         foreach (keys %patch_bins) {
             $patch_bins{$_}->{new} = get_installed_bin_version($_);
         }
+
+        # repeat the update process for conflicting packages
+        if (scalar(@excluded_conflicts)) {
+            record_info 'Patch conflicts';
+            disable_test_repositories($repos_count);
+
+            record_info 'Preinstall', 'Install conflicting packages before update repo is enabled';
+            my $ret = zypper_call("in -l --force-resolution --solver-focus Update @excluded_conflicts", exitcode => [0, 8, 102, 103], log => 'prepare.log', timeout => 1500);
+            if ($ret == 8 && script_run('grep -Ez "python3(6?)-pip.*(SLES:12-SP5|cloud:12).*conflicts with.*python3(6?)-pip" /tmp/prepare.log') == 0) {
+                record_soft_failure 'bsc#1195351 - python3 vs python36 in SLE12 SP5 has file conflicts on /usr/bin/pip3';
+                zypper_call("in -l --force-resolution --solver-focus Update --replacefiles @excluded_conflicts", exitcode => [0, 102, 103], timeout => 1500);
+            }
+
+            foreach (@excluded_conflicts) {
+                $patch_bins{$_}->{old} = get_installed_bin_version($_);
+            }
+
+            enable_test_repositories($repos_count);
+
+            record_info 'Install patch', "Install patch $patch";
+            my $ret = zypper_call("in -l -t patch $patch", exitcode => [0, 8, 102, 103], log => 'zypper.log', timeout => 1500);
+            if ($ret == 8 && script_run('grep -Ez "python3(6?)-pip.*(SLES:12-SP5|cloud:12).*conflicts with.*python3(6?)-pip" /tmp/zypper.log') == 0) {
+                record_soft_failure 'bsc#1195351 - python3 vs python36 in SLE12 SP5 has file conflicts on /usr/bin/pip3';
+                zypper_call("in --replacefiles -l -t patch $patch", exitcode => [0, 102, 103], log => 'zypper.log', timeout => 1500);
+            }
+
+            foreach (@excluded_conflicts) {
+                $patch_bins{$_}->{new} = get_installed_bin_version($_);
+            }
+        }
+
         my $l3_results = "L3 binaries must always be updated.\n";
         foreach (@l3) {
             if ($patch_bins{$_}->{old} eq $patch_bins{$_}->{new} or not $patch_bins{$_}->{new}) {
