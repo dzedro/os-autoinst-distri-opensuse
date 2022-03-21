@@ -198,11 +198,12 @@ sub run {
         # Make sure with '--force-resolution --solver-focus Update' patched binaries are installed
         if (scalar(keys %installable)) {
             record_info 'Preinstall', 'Install affected packages before update repo is enabled';
-            my $ret = zypper_call("in -l --force-resolution --solver-focus Update " . join(' ', keys %installable), exitcode => [0, 8, 102, 103], log => 'prepare.log', timeout => 1500);
-            if ($ret == 8 && script_run('grep -Ez "python3(6?)-pip.*(SLES:12-SP5|cloud:12).*conflicts with.*python3(6?)-pip" /tmp/prepare.log') == 0) {
-                record_soft_failure 'bsc#1195351 - python3 vs python36 in SLE12 SP5 has file conflicts on /usr/bin/pip3';
-                zypper_call("in -l --force-resolution --solver-focus Update --replacefiles " . join(' ', keys %installable), exitcode => [0, 102, 103], timeout => 1500);
-            }
+            assert_script_run("expect -c 'spawn zypper in " . join(' ', keys %installable) . ";expect Choose;send 2\\n;expect Choose;send 2\\n;expect Choose;send 2\\n;expect Choose;send 2\\n;expect Choose;send 2\\n;expect Choose;send 2\\n;expect Choose;send 2\\n;expect Choose;send 2\\n;expect Choose;send 2\\n;expect Continue;send y\\n;expect #'");
+#            my $ret = zypper_call("in -l " . join(' ', keys %installable), exitcode => [0, 4, 8, 102, 103], log => 'prepare.log', timeout => 1500);
+#            if ($ret == 8 && script_run('grep -Ez "python3(6?)-pip.*(SLES:12-SP5|cloud:12).*conflicts with.*python3(6?)-pip" /tmp/prepare.log') == 0) {
+#                record_soft_failure 'bsc#1195351 - python3 vs python36 in SLE12 SP5 has file conflicts on /usr/bin/pip3';
+#                zypper_call("in -l --force-resolution --solver-focus Update --replacefiles " . join(' ', keys %installable), exitcode => [0, 102, 103], timeout => 1500);
+#            }
         }
 
         # Store the version of the installed binaries before the update.
