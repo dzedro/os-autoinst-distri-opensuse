@@ -15,7 +15,7 @@ use hacluster;
 
 sub run {
     select_console 'root-console';
-    sleep 120;
+    sleep 200;
     # Check for the state of the whole cluster
     check_cluster_state;
 }
