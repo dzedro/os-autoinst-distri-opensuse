@@ -6,7 +6,7 @@ use warnings;
 use base 'Exporter';
 use Exporter;
 
-use testapi;
+use testapi qw(is_serial_terminal :DEFAULT);
 use version_utils 'is_opensuse';
 
 our @EXPORT = qw(configure_hostname get_host_resolv_conf is_networkmanager restart_networking
@@ -91,10 +91,10 @@ sub configure_dhcp {
     type_string "NIC=`grep \$MAC /sys/class/net/*/address |cut -d / -f 5`;";
     type_string("echo \"STARTMODE='auto'\nBOOTPROTO='dhcp'\n\" > /etc/sysconfig/network/ifcfg-\$NIC;");
     enter_cmd 'done';
-    save_screenshot;
+    save_screenshot unless is_serial_terminal;
     assert_script_run "rcnetwork restart";
     assert_script_run "ip addr";
-    save_screenshot;
+    save_screenshot unless is_serial_terminal;
 }
 
 sub configure_default_gateway {
