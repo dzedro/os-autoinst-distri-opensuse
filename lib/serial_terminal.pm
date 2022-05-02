@@ -123,11 +123,13 @@ sub login {
     # Eat stale buffer contents, otherwise the code below may get confused
     # after reboot and start typing the username before the console is actually
     # ready to accept it
-    wait_serial(qr/login:\s*$/i, timeout => 3, quiet => 1);
+    wait_serial(qr/login:\s+$/, timeout => 3, quiet => 1);
     # newline nudges the guest to display the login prompt, if this behaviour
     # changes then remove it
     send_key 'ret';
-    die 'Failed to wait for login prompt' unless wait_serial(qr/login:\s*$/i);
+    send_key 'ret';
+    send_key 'ret';
+    record_soft_failure 'Failed to wait for login prompt' unless wait_serial(qr/.*login:\s+$/);
     enter_cmd("$user");
 
     my $re = qr/$user/i;
