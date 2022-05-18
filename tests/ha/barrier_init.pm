@@ -112,8 +112,8 @@ sub run {
         barrier_create("HAWK_FENCE_$cluster_name", $num_nodes + 1);
 
         # CTDB barriers
-        barrier_create("CTDB_INIT_$cluster_name", $num_nodes + 1);
-        barrier_create("CTDB_DONE_$cluster_name", $num_nodes + 1);
+        barrier_create("CTDB_INIT_$cluster_name", $num_nodes);
+        barrier_create("CTDB_DONE_$cluster_name", $num_nodes);
 
         # QNETD barriers
         barrier_create("QNETD_SERVER_READY_$cluster_name", $num_nodes + 1);
