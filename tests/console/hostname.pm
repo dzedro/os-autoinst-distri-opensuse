@@ -25,7 +25,8 @@ use utils;
 use version_utils "is_sle";
 
 sub run {
-    select_console 'root-console';
+    my $self = shift;
+    $self->select_serial_terminal;
 
     # Prevent HOSTNAME from being reset by DHCP
     file_content_replace('/etc/sysconfig/network/dhcp', 'DHCLIENT_SET_HOSTNAME="yes"' => 'DHCLIENT_SET_HOSTNAME="no"');

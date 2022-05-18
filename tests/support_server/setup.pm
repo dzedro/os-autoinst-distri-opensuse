@@ -430,6 +430,8 @@ sub setup_iscsi_server {
     send_key 'alt-f';
     wait_serial('yast2-iscsi-lio-server-status-0', 90) || die "'yast2 iscsi-lio-server' didn't finish";
 
+    opensusebasetest::select_serial_terminal();
+
     # Now we need to enable iSCSI Demo Mode
     # With this mode, we don't need to manage iSCSI initiators
     # It's OK for a test/QA system, but of course not for a production one!
@@ -439,7 +441,6 @@ sub setup_iscsi_server {
                        -e '/\\/generate_node_acls\$/s/^echo 0/echo 1/'      \\
                        -e '/\\/authentication\$/s/^echo 1/echo 0/' /etc/target/lio_setup.sh";
     systemctl('enable --now target');
-    opensusebasetest::select_serial_terminal();
 
     $iscsi_server_set = 1;
 }

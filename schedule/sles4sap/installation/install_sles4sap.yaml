@@ -15,7 +15,6 @@ schedule:
   - '{{sles4sap_product_installation_mode}}'
   - installation/partitioning
   - installation/partitioning_finish
-  - installation/releasenotes
   - installation/installer_timezone
   - installation/hostname_inst
   - '{{user_settings}}'

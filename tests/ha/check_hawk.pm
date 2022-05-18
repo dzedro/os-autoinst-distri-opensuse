@@ -10,7 +10,7 @@
 use base 'opensusebasetest';
 use strict;
 use warnings;
-use testapi;
+use testapi qw(is_serial_terminal :DEFAULT);
 use lockapi;
 use hacluster qw(get_cluster_name is_node);
 use utils qw(systemctl);
@@ -90,7 +90,7 @@ sub run {
     }
 
     # Keep a screenshot for this test
-    save_screenshot;
+    save_screenshot unless is_serial_terminal;
 
     barrier_wait("HAWK_CHECKED_$cluster_name");
 

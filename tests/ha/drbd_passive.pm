@@ -91,6 +91,7 @@ sub run {
     barrier_wait("DRBD_CREATE_CONF_$cluster_name");
 
     # Create the DRBD device
+    assert_script_run "drbdadm dump all";
     assert_script_run "drbdadm create-md --force $drbd_rsc";
     assert_script_run "drbdadm up $drbd_rsc";
 
@@ -104,6 +105,21 @@ sub run {
 
         # Run assert_script_run timeout 240 during the long assert_script_run drbd sync
         assert_script_run "while ! \$(drbdadm status $drbd_rsc | grep -q \"peer-disk:UpToDate\"); do sleep 10; drbdadm status $drbd_rsc; done", 240;
+        assert_script_run 'mkfs -t xfs -f /dev/drbd_passive', $default_timeout if is_node(1);
+        if (is_node(1)) {
+            ensure_resource_running("$fs_rsc", "is running on:[[:blank:]]*$node\[[:blank:]]*\$");
+
+            # Add files/data in the Filesystem
+            assert_script_run "cp -r /usr/bin/ /srv/$fs_rsc ; sync", $default_timeout;
+            assert_script_run "cd /srv/$fs_rsc/bin ; find . -type f -exec md5sum {} \\; > ../out", $default_timeout;
+
+            # Check if files/data are different in the Filesystem
+            assert_script_run "cd /srv/$fs_rsc/bin ; find . -type f -exec md5sum {} \\; > ../out_$node", $default_timeout;
+            assert_script_run "cd /srv/$fs_rsc ; diff -urN out out_$node", $default_timeout;
+        }
+        else {
+            diag 'Wait until Filesystem is filled with data...';
+        }
     }
     else {
         diag 'Wait until drbd device is activated on primary node...';
@@ -136,7 +152,7 @@ sub run {
         # So set secondary mode to avoid this issue
         assert_script_run "drbdadm secondary $drbd_rsc";
     }
-    assert_script_run "drbdadm down $drbd_rsc";
+    #assert_script_run "drbdadm down $drbd_rsc";
 
     # Wait for DRBD device to stop
     barrier_wait("DRBD_DOWN_DONE_$cluster_name");
@@ -196,7 +212,8 @@ sub run {
 
     # Migrate DRBD resource on the other node
     if (is_node(2)) {
-        assert_script_run "crm resource migrate ms_$drbd_rsc $node_02";
+        assert_script_run "crm resource move ms_$drbd_rsc $node_02";
+        assert_script_run "crm resource clear ms_$drbd_rsc";
 
         # Just to be sure that Pacemaker has done its job!
         sleep 5;
@@ -222,7 +239,35 @@ sub run {
 
     # Revert the migration - we need to have the Master on first node for the next test
     if (is_node(1)) {
-        assert_script_run "crm resource migrate ms_$drbd_rsc $node_01";
+        assert_script_run "crm resource move ms_$drbd_rsc $node_01";
+        assert_script_run "crm resource clear ms_$drbd_rsc";
+
+    else {
+        if ($resource eq 'drbd_passive') {
+            if (is_node(2)) {
+                # Arbitrary choice, a cluster always has at least two nodes
+                $node = choose_node(2);
+
+                # Migrate resource on the node
+                assert_script_run "crm resource status $fs_rsc";
+                assert_script_run "crm -w resource move ms_$resource $node", $default_timeout;
+                assert_script_run "crm -w resource clear ms_$resource";
+                sleep 10;
+                assert_script_run 'cat /proc/drbd';
+                assert_script_run "ll $fs_lun";
+                assert_script_run "crm -w resource status $fs_rsc";
+
+                ensure_resource_running("$fs_rsc", "is running on:[[:blank:]]*$node\[[:blank:]]*\$");
+
+                # Do a check of the cluster with a screenshot
+                script_run 'df -h', $default_timeout;
+                save_state;
+            }
+            else {
+                diag 'Wait until Filesystem content is checked on other nodes...';
+            }
+        }
+    }
 
         # Just to be sure that Pacemaker has done its job!
         sleep 5;

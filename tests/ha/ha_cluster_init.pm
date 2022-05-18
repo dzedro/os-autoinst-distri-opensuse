@@ -58,6 +58,8 @@ sub cluster_init {
 }
 
 sub run {
+    my $self = shift;
+    $self->select_serial_terminal;
     # Validate cluster creation with ha-cluster-init tool
     my $cluster_name = get_cluster_name;
     my $bootstrap_log = '/var/log/ha-cluster-bootstrap.log';
@@ -68,6 +70,7 @@ sub run {
     my $quorum_policy = 'stop';
     my $fencing_opt = "-s \"$sbd_device\"";
     my $qdevice_opt;
+    #assert_script_run 'alias crm="crm -d -D plain -w"' if is_serial_terminal;
 
     # Qdevice configuration
     if (get_var('QDEVICE')) {

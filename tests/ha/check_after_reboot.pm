@@ -10,7 +10,7 @@
 use base 'opensusebasetest';
 use strict;
 use warnings;
-use testapi;
+use testapi qw(is_serial_terminal :DEFAULT);
 use Time::HiRes 'sleep';
 use Utils::Architectures;
 use lockapi;
@@ -19,6 +19,8 @@ use version_utils qw(is_sles4sap);
 use utils qw(systemctl);
 
 sub run {
+    my $self = shift;
+    $self->select_serial_terminal;
     my $cluster_name = get_cluster_name;
     my $node_to_fence = get_var('NODE_TO_FENCE', undef);
     my $node_index = !defined $node_to_fence ? 1 : 2;
@@ -32,13 +34,13 @@ sub run {
 
     # We need to be sure to be root and, after fencing, the default console on node01 is not root
     # Only do this on node01, as node02 console is expected to be the root-console
-    if ((is_node($node_index) && !get_var('HDDVERSION')) || (is_node(2) && check_var('QDEVICE_TEST_ROLE', 'client'))) {
+    if (((is_node($node_index) && !get_var('HDDVERSION')) || (is_node(2) && check_var('QDEVICE_TEST_ROLE', 'client'))) && !is_serial_terminal) {
         reset_consoles;
         select_console 'root-console';
     }
     # This code is also called after boot on update tests. We must ensure to be on the root console
     # in that case
-    select_console 'root-console' if (get_var('HDDVERSION'));
+    select_console 'root-console' if (get_var('HDDVERSION') && !is_serial_terminal);
 
     # Remove iptable rules in node 1 when testing qnetd/qdevice in multicast
     assert_script_run "iptables -F && iptables -X" if (is_node(1) && check_var('QDEVICE_TEST_ROLE', 'client') && !get_var('HA_UNICAST'));

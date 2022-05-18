@@ -17,6 +17,8 @@ use hacluster;
 use version_utils qw(is_sle);
 
 sub run {
+    my $self = shift;
+    $self->select_serial_terminal;
     # Some remote backends connect to the root-console via sshXtermVt or ipmiXtermVt,
     # which set DISPLAY and cause yast2 to show its graphical version. This unsets
     # DISPLAY so the terminal version is shown instead when testing in textmode
@@ -34,6 +36,7 @@ sub run {
 
     # Installation of iSCSI client package(s) if needed
     zypper_call 'in yast2-iscsi-client';
+    select_console('root-console');
 
     # Configuration of iSCSI client
     script_run("yast2 iscsi-client; echo yast2-iscsi-client-status-\$? > /dev/$serialdev", 0);
@@ -77,6 +80,7 @@ sub run {
     send_key 'alt-o';    # Ok
     wait_still_screen 3;
     wait_serial('yast2-iscsi-client-status-0', 90) || die "'yast2 iscsi-client' didn't finish";
+    $self->select_serial_terminal;
 
     if (is_sle('=15-SP1') && systemctl('-q is-active iscsi', ignore_failure => 1)) {
         record_soft_failure('iscsi issue: bug bsc#1162078');

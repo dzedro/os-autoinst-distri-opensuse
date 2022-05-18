@@ -18,7 +18,8 @@ use x11utils 'ensure_unlocked_desktop';
 use migration 'disable_kernel_multiversion';
 
 sub run {
-    select_console 'root-console';
+    my $self = shift;
+    $self->select_serial_terminal;
 
     # print repos to screen and serial console after online migration
     assert_script_run "zypper lr --uri | tee /dev/$serialdev";

@@ -14,7 +14,8 @@ use testapi;
 use hacluster;
 
 sub run {
-    select_console 'root-console';
+    my $self = shift;
+    $self->select_serial_terminal;
     sleep 120;
     # Check for the state of the whole cluster
     check_cluster_state;

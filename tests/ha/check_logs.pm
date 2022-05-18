@@ -16,6 +16,7 @@ use hacluster qw(get_cluster_name ha_export_logs);
 use version_utils 'is_sle';
 
 sub run {
+    my $self = shift;
     my $cluster_name = get_cluster_name;
 
     # Checking cluster state can take time, so default timeout is not enough
@@ -26,7 +27,7 @@ sub run {
     barrier_wait("LOGS_CHECKED_$cluster_name");
 
     # Export logs
-    ha_export_logs;
+    ha_export_logs($self);
 
     # Looking for segfault during the test
     if (script_run '(( $(grep -sR segfault /var/log | wc -l) == 0 ))') {

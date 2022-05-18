@@ -140,10 +140,13 @@ sub run {
     barrier_wait("SPLIT_BRAIN_TEST_DONE_$cluster_name");
 
     # Show cluster status before ending the test
-    save_state if (is_node(1) || !(get_var('USE_DISKLESS_SBD') || check_var('QDEVICE_TEST_ROLE', 'qnetd_server')));
+    save_state if (is_node(1) || !(get_var('USE_DISKLESS_SBD') || check_var('QDEVICE_TEST_ROLE', 'qnetd_server') || is_node(2)));
 
     # Restart stonith. This should fence node 2
     assert_script_run 'crm configure property stonith-enabled="true"' if is_node(1);
+
+    # exit virtio console because node 2 will reboot
+    select_console('root-console', skip_set_standard_prompt => 1, skip_setterm => 1) if is_node(2);
 
     barrier_wait("QNETD_SERVER_DONE_$cluster_name");
 

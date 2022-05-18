@@ -47,6 +47,7 @@ sub run {
         # Create barriers for HA clusters
         barrier_create("CLUSTER_INITIALIZED_$cluster_name", $num_nodes);
         barrier_create("NODE_JOINED_$cluster_name", $num_nodes);
+        barrier_create("CLVM_INSTALLED_$cluster_name", $num_nodes);
         barrier_create("DLM_INIT_$cluster_name", $num_nodes);
         barrier_create("DLM_GROUPS_CREATED_$cluster_name", $num_nodes);
         barrier_create("DLM_CHECKED_$cluster_name", $num_nodes);

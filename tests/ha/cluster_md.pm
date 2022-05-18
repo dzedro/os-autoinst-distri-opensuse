@@ -16,6 +16,8 @@ use lockapi;
 use hacluster;
 
 sub run {
+    my $self = shift;
+    $self->select_serial_terminal;
     my $mdadm_conf = '/etc/mdadm.conf';
     my $clustermd_lun_01 = get_lun(use_once => 0);
     my $clustermd_lun_02 = get_lun(use_once => 0);

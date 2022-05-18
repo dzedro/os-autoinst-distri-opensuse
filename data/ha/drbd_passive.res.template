@@ -22,6 +22,11 @@ resource drbd_passive {
     no-disk-barrier;
   }
 
+  startup {
+    wfc-timeout  120;
+    degr-wfc-timeout 60;
+  }
+
   connection-mesh {
     hosts %NODE_01% %NODE_02%;
   }

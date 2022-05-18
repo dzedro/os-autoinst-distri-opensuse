@@ -42,22 +42,13 @@ sub run {
         record_info('Fencing info', 'Fencing done by crm');
         if (defined $node_to_fence) {
             assert_script_run "crm -F node fence $node_to_fence" if (get_hostname ne "$node_to_fence");
-        } else {
-            assert_script_run 'crm -F node fence ' . get_node_to_join if is_node(2);
+        } elsif (is_node(2)) {
+            assert_script_run('crm -F node fence ' . get_node_to_join, timeout => 300);
         }
     }
 
-    # Wait for server to restart on $node_to_fence or on the master node if no node is specified
-    # This loop waits for 'root-console' to disappear, then 'boot_to_desktop' (or something similar) will take care of the boot
-    if ((!defined $node_to_fence && check_var('HA_CLUSTER_INIT', 'yes')) || (defined $node_to_fence && get_hostname eq "$node_to_fence")) {
-        # Wait at most for 5 minutes (TIMEOUT_SCALE could increase this value!)
-        my $loop_count = bmwqemu::scale_timeout(300);
-        while (check_screen('root-console', 0, no_wait => 1)) {
-            sleep 1;
-            $loop_count--;
-            last if !$loop_count;
-        }
-    }
+    # exit virtio console because node 2 will reboot
+    select_console('root-console', skip_set_standard_prompt => 1, skip_setterm => 1) if is_node(1);
 
     # In case of HANA cluster we also have to test the failback/takeback after the first fencing
     if (check_var('CLUSTER_NAME', 'hana') && !defined $node_to_fence) {

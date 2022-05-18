@@ -30,6 +30,7 @@ sub run {
     # This Filesystem test can be called multiple time
     if (read_tag eq 'cluster_md') {
         $resource = 'cluster_md';
+        $fs_lun = "/dev/vg_$resource/lv_openqa";
     }
     elsif (read_tag eq 'drbd_passive') {
         $resource = 'drbd_passive';
@@ -43,7 +44,6 @@ sub run {
     else {
         $fs_lun = get_lun if is_node(1);
     }
-    $fs_lun = "/dev/vg_$resource/lv_openqa" if (not defined $fs_lun && is_node(1));
     $fs_rsc = "fs_$resource";
 
     # Create tag for barrier_wait
@@ -73,11 +73,14 @@ sub run {
     zypper_call 'in xfsprogs' if (!is_package_installed 'xfsprogs' and ($fs_type eq 'xfs'));
 
     # Format the Filesystem device
-    if (is_node(1)) {
-        assert_script_run "mkfs -t $fs_type $fs_opts \"$fs_lun\"", $default_timeout;
-    }
-    else {
-        diag 'Wait until Filesystem device is formatted...';
+    unless (read_tag eq 'drbd_passive') {
+        if (is_node(1)) {
+            # format drbd_passive on both nodes
+            assert_script_run "mkfs -t $fs_type $fs_opts \"$fs_lun\"", $default_timeout;
+        }
+        else {
+            assert_script_run "mkfs -t $fs_type $fs_opts \"$fs_lun\"", $default_timeout if is_node(1);
+        }
     }
 
     # Wait until Filesystem device is formatted
@@ -120,70 +123,11 @@ sub run {
     script_run 'df -h', $default_timeout;
     save_state;
 
-    if ($resource eq 'drbd_passive') {
-        # To ensure a proper resource migration, we need to stop/start it
-        if (is_node(1)) {
-            assert_script_run "crm resource stop $fs_rsc", $default_timeout;
-        }
-
-        # Wait for Filesystem to be stopped
-        barrier_wait("FS_RESOURCE_STOPPED_${barrier_tag}_$cluster_name");
-    }
-
-    if (is_node(1)) {
-        if ($resource eq 'drbd_passive') {
-            # Start the resource
-            script_run "crm resource start $fs_rsc", $default_timeout;
-            ensure_resource_running("$fs_rsc", "is running on:[[:blank:]]*$node\[[:blank:]]*\$");
-        }
-
-        # Add files/data in the Filesystem
-        assert_script_run "cp -r /usr/bin/ /srv/$fs_rsc ; sync", $default_timeout;
-        assert_script_run "cd /srv/$fs_rsc/bin ; find . -type f -exec md5sum {} \\; > ../out", $default_timeout;
-    }
-    else {
-        diag 'Wait until Filesystem is filled with data...';
-    }
-
     # Wait until Filesystem is filled with data
     barrier_wait("FS_DATA_COPIED_${barrier_tag}_$cluster_name");
 
     # Do a check of the cluster with a screenshot
     save_state;
-
-    if (is_node(1)) {
-        diag 'Wait until Filesystem content is checked on other nodes...';
-    }
-    else {
-        if ($resource eq 'drbd_passive') {
-            if (is_node(2)) {
-                # Arbitrary choice, a cluster always has at least two nodes
-                $node = choose_node(2);
-
-                # Workaround needed before 12sp4
-                # Restart of master/slave rsc after fs_rsc configuration
-                foreach my $action ('stop', 'start') {
-                    assert_script_run "crm resource $action ms_$resource", $default_timeout;
-                    sleep 5;
-                }
-
-                # Migrate resource on the node
-                assert_script_run "crm resource migrate ms_$resource $node", $default_timeout;
-                ensure_resource_running("$fs_rsc", "is running on:[[:blank:]]*$node\[[:blank:]]*\$");
-
-                # Do a check of the cluster with a screenshot
-                script_run 'df -h', $default_timeout;
-                save_state;
-            }
-            else {
-                diag 'Wait until Filesystem content is checked on other nodes...';
-            }
-        }
-
-        # Check if files/data are different in the Filesystem
-        assert_script_run "cd /srv/$fs_rsc/bin ; find . -type f -exec md5sum {} \\; > ../out_$node", $default_timeout;
-        assert_script_run "cd /srv/$fs_rsc ; diff -urN out out_$node", $default_timeout;
-    }
 
     # Return to default directory
     enter_cmd "cd";

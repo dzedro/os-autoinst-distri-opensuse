@@ -34,6 +34,7 @@ sub wait_for_password_prompt {
 sub run {
     my $cluster_name = get_cluster_name;
     my $node_to_join = get_node_to_join;
+    #assert_script_run 'alias crm="crm -d -D plain"' if is_serial_terminal;
 
     # Qdevice configuration
     if (get_var('QDEVICE')) {

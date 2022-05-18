@@ -41,6 +41,7 @@ sub run {
         # In SLE15, lvmlockd is installed by default, not clvmd/cmirrord
         zypper_call 'in lvm2-clvm lvm2-cmirrord' if is_sle('15+');
     }
+    barrier_wait("CLVM_INSTALLED_$cluster_name");
 
     # Configure LVM for HA cluster
     lvm_add_filter('r', '/dev/.\*/by-partuuid/.\*');
