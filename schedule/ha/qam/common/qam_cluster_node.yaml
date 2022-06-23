@@ -57,8 +57,6 @@ schedule:
   - ha/cluster_md
   - ha/vg
   - ha/filesystem
-  - ha/drbd_passive
-  - ha/filesystem
   - ha/ctdb
   - ha/haproxy
   - ha/fencing
