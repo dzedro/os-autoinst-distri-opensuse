@@ -13,6 +13,7 @@ use Mojo::Base 'publiccloud::basetest';
 use publiccloud::utils "select_host_console";
 use testapi;
 use utils;
+use Data::Dumper;
 
 sub prepare_ssh_tunnel {
     my $instance = shift;
@@ -74,6 +75,11 @@ sub run {
     $args->{my_provider} = $provider;
     $args->{my_instance} = $instance;
     $instance->ssh_opts("");    # Clear $instance->ssh_opts which ombit the known hosts file and strict host checking by default
+
+    printf "TADA\n";
+    print Dumper $args;
+    print Dumper $args->{my_provider};
+    print Dumper $args->{my_instance};
 
     $instance->network_speed_test();
 
