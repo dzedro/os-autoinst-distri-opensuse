@@ -1,0 +1,1 @@
+id,name,parent_id,size_limit_gb,exclusively_kept_asset_size,keep_logs_in_days,keep_important_logs_in_days,keep_results_in_days,keep_important_results_in_days,default_priority,sort_order,description,build_version_sort,t_created,t_updated,carry_over_bugrefs,template

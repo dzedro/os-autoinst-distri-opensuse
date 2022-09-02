@@ -52,25 +52,36 @@ sub run {
     # Try to join the HA cluster through first node
     assert_script_run "ping -c1 $node_to_join";
     # Status redirection is not needed if running on serial terminal
-    my $redirection = is_serial_terminal() ? '' : "> /dev/$serialdev";
-    enter_cmd "ha-cluster-join -yc $node_to_join ; echo ha-cluster-join-finished-\$? $redirection";
-    wait_for_password_prompt(needle => 'ha-cluster-join-password', timeout => $join_timeout);
-    type_password;
-    send_key 'ret';
-    if (check_var('TWO_NODES', 'no') && wait_for_password_prompt(needle => 'ha-cluster-join-3nodes-password', timeout => 150, failok => 1)) {
-        type_password;
-        send_key 'ret';
+    #my $redirection = is_serial_terminal() ? '' : "> /dev/$serialdev";
+    #enter_cmd "crm cluster join -yc $node_to_join ; echo ha-cluster-join-finished-\$? $redirection";
+
+    assert_script_run "until nc -zv hana-node02 7630;do echo wait;sleep 5;done", 500 if check_var('HOSTNAME', 'hana-control');
+    sleep 5;
+    enter_cmd "expect -c '
+set timeout -1
+spawn crm cluster join -yc $node_to_join
+expect {
+    saved {
+        exit
     }
-    my $join_success = wait_serial("ha-cluster-join-finished-0", $join_timeout);
-    unless ($join_success) {
-        record_info "Join Failed", "HA cluster join failed. Waiting 3 seconds and re-trying";
-        sleep bmwqemu::scale_timeout(3);
-        # Attempt to start pacemaker in case this was what failed during join
-        # This is needed so ha-cluster-remove works
-        assert_script_run 'systemctl start pacemaker';
-        assert_script_run 'ha-cluster-remove -F -y -c $(hostname)';
-        assert_script_run "ha-cluster-join -yc $node_to_join", $join_timeout;
+    assword: {
+        send $testapi::password\\n; exp_continue
     }
+}'", timeout => 300;
+    #wait_serial("ha-cluster-join-finished-0", $join_timeout);
+    #my $join_success = wait_serial("ha-cluster-join-finished-0", $join_timeout);
+#    unless ($join_success) {
+#        record_info "Join Failed", "HA cluster join failed. Waiting 3 seconds and re-trying";
+#        sleep bmwqemu::scale_timeout(3);
+#        # Attempt to start pacemaker in case this was what failed during join
+#        # This is needed so ha-cluster-remove works
+#        assert_script_run 'systemctl start pacemaker';
+#        assert_script_run 'ha-cluster-remove -F -y -c $(hostname)';
+#        assert_script_run "ha-cluster-join -yc $node_to_join", $join_timeout;
+#    }
+    sleep 10;
+    assert_script_run "crm status";
+    assert_script_run "crm cluster status";
 
     # Indicate that the other nodes have joined the cluster
     barrier_wait("NODE_JOINED_$cluster_name");

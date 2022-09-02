@@ -13,7 +13,7 @@ use power_action_utils 'power_action';
 use utils;
 
 sub run {
-    power_action('poweroff');
+    power_action('poweroff', keepconsole => get_var('HANA'), textmode => get_var('HANA'));
 }
 
 sub test_flags {

@@ -10,6 +10,9 @@ package publiccloud::utils;
 
 use base Exporter;
 use Exporter;
+use Mojo::UserAgent;
+use Mojo::URL;
+use Mojo::JSON 'encode_json';
 
 use strict;
 use warnings;
@@ -22,6 +25,7 @@ use registration;
 our @EXPORT = qw(
   deregister_addon
   define_secret_variable
+  get_credentials
   is_byos
   is_ondemand
   is_ec2
@@ -33,6 +37,7 @@ our @EXPORT = qw(
   register_openstack
   register_addons_in_pc
   select_host_console
+  gcloud_install
 );
 
 # Select console on the test host, if force is set, the interactive session will
@@ -208,6 +213,60 @@ sub define_secret_variable {
     script_run("read -sp \"enter value: \" $var_name", 0);
     type_password($var_value . "\n");
     script_run("set +a");
+}
+
+# Get credentials from the Public Cloud micro service, which requires user
+# and password. The resulting json will be stored in a file.
+sub get_credentials {
+    my ($url_sufix, $output_json) = @_;
+    my $base_url = get_required_var('PUBLIC_CLOUD_CREDENTIALS_URL');
+    my $namespace = get_required_var('PUBLIC_CLOUD_NAMESPACE');
+    my $user = get_required_var('_SECRET_PUBLIC_CLOUD_CREDENTIALS_USER');
+    my $pwd = get_required_var('_SECRET_PUBLIC_CLOUD_CREDENTIALS_PWD');
+    my $url = $base_url . '/' . $namespace . '/' . $url_sufix;
+
+    my $url_auth = Mojo::URL->new($url)->userinfo("$user:$pwd");
+    my $ua = Mojo::UserAgent->new;
+    $ua->insecure(1);
+    my $tx = $ua->get($url_auth);
+    die("Fetching CSP credentials failed: " . $tx->result->message) unless eval { $tx->result->is_success };
+    my $data_structure = $tx->res->json;
+    if ($output_json) {
+        # Note: tmp files are job-specific files in the pool directory on the worker and get cleaned up after job execution
+        save_tmp_file('creds.json', encode_json($data_structure));
+        assert_script_run('curl ' . autoinst_url . '/files/creds.json -o ' . $output_json);
+    }
+    return $data_structure;
+}
+
+=head2 gcloud_install
+    gcloud_install($url, $dir, $timeout)
+
+This function is used to install the gcloud CLI 
+for the GKE Google Cloud.
+
+From $url we get the full package and install it
+in $dir local folder as a subdir of /root.
+Defaults are available for a simple call without parameters:
+    gcloud_install()
+
+=cut
+
+sub gcloud_install {
+    my %args = @_;
+    my $url = $args{url} || 'sdk.cloud.google.com';
+    my $dir = $args{dir} || 'google-cloud-sdk';
+    my $timeout = $args{timeout} || 700;
+
+    zypper_call("in curl tar gzip", $timeout);
+
+    assert_script_run("export CLOUDSDK_CORE_DISABLE_PROMPTS=1");
+    assert_script_run("curl $url | bash", $timeout);
+    assert_script_run("echo . /root/$dir/completion.bash.inc >> ~/.bashrc");
+    assert_script_run("echo . /root/$dir/path.bash.inc >> ~/.bashrc");
+    assert_script_run("source ~/.bashrc");
+
+    record_info('GCE', script_output('gcloud version'));
 }
 
 1;

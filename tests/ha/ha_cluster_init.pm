@@ -106,10 +106,14 @@ sub run {
         record_info("Cluster info", "Two nodes cluster detected");
         assert_script_run "crm corosync set quorum.wait_for_all 0";
         assert_script_run "grep -q 'wait_for_all: 0' $corosync_conf";
-        assert_script_run "crm cluster stop";
+        assert_script_run "crm cluster status";
+        assert_script_run "crm cluster stop", 300;
         assert_script_run "crm cluster start";
         wait_until_resources_started;
     }
+    sleep 30;
+    assert_script_run "crm status";
+    assert_script_run "crm cluster status";
 
     # Signal that the cluster stack is initialized
     barrier_wait("CLUSTER_INITIALIZED_$cluster_name");

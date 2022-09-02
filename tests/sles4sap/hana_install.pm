@@ -95,9 +95,6 @@ sub run {
 
     zypper_call('in SAPHanaSR SAPHanaSR-doc ClusterTools2') if get_var('HA_CLUSTER');
 
-    # Add host's IP to /etc/hosts
-    $self->add_hostname_to_hosts;
-
     # Install libopenssl1_0_0 for older (<SPS03) HANA versions on SLE15+
     $self->install_libopenssl_legacy($path);
 
@@ -114,7 +111,7 @@ sub run {
     my $volgroup = 'vg_hana';
     my %mountpts = (
         hanadata => {mountpt => '/hana/data', size => "${full_size}g"},
-        hanalog => {mountpt => '/hana/log', size => "${half_size}g"},
+        hanalog => {mountpt => '/hana/log', size => "${full_size}g"},
         hanashared => {mountpt => '/hana/shared', size => "${full_size}g"},
         usr_sap => {mountpt => "/usr/sap/$sid/home", size => '50g'}
     );

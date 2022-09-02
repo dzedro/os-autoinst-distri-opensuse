@@ -13,12 +13,14 @@ use testapi;
 use utils;
 use version_utils 'is_sle';
 use publiccloud::vault;
+use publiccloud::utils;
 use Mojo::Util qw(b64_decode);
 use Mojo::JSON 'decode_json';
+use mmapi 'get_current_job_id';
 
 use constant CREDENTIALS_FILE => '/root/google_credentials.json';
 
-has storage_name => sub { get_var('PUBLIC_CLOUD_GOOGLE_STORAGE', 'openqa-storage') };
+has storage_name => sub { get_var('PUBLIC_CLOUD_STORAGE_ACCOUNT', 'openqa-storage') };
 has project_id => sub { get_var('PUBLIC_CLOUD_GOOGLE_PROJECT_ID') };
 has account => sub { get_var('PUBLIC_CLOUD_GOOGLE_ACCOUNT') };
 has service_acount_name => sub { get_var('PUBLIC_CLOUD_GOOGLE_SERVICE_ACCOUNT') };
@@ -33,10 +35,15 @@ has vault => undef;
 
 sub init {
     my ($self) = @_;
-
-    $self->vault(publiccloud::vault->new());
-
-    $self->create_credentials_file();
+    # For now we support Vault and the credentials-microservice. Vault will be removed after a certain transition period
+    if (get_var('PUBLIC_CLOUD_CREDENTIALS_URL')) {
+        my $data = get_credentials('gce.json', CREDENTIALS_FILE);
+        $self->project_id($data->{project_id});
+        $self->account($data->{client_id});
+    } else {
+        $self->vault(publiccloud::vault->new());
+        $self->create_credentials_file();
+    }
     assert_script_run('source ~/.bashrc');
     (is_sle('=15-SP4')) ? assert_script_run("chronyd -q 'pool time.google.com iburst'") : assert_script_run('ntpdate -s time.google.com');
     assert_script_run('gcloud config set account ' . $self->account);
@@ -115,7 +122,7 @@ Get the full registry prefix URL for any containers image registry of ECR based 
 
 sub get_container_registry_prefix {
     my ($self) = @_;
-    return sprintf($self->gcr_zone . '/suse-sle-qa', $self->project_id);
+    return $self->gcr_zone . '/' . $self->project_id;
 }
 
 =head2 get_container_image_full_name
@@ -126,7 +133,7 @@ Get the full name for a container image in ECR registry
 sub get_container_image_full_name {
     my ($self, $tag) = @_;
     my $full_name_prefix = $self->get_container_registry_prefix();
-    return "$full_name_prefix/$tag:latest";
+    return "$full_name_prefix/$tag" . get_current_job_id() . ":latest";
 }
 
 =head2 configure_podman
@@ -141,7 +148,7 @@ sub configure_podman {
 
 sub cleanup {
     my ($self) = @_;
-    $self->vault->revoke();
+    $self->vault->revoke() unless (get_var('PUBLIC_CLOUD_CREDENTIALS_URL'));
 }
 
 1;

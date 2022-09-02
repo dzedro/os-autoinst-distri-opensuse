@@ -18,17 +18,16 @@ description: >
   referencing the parent job.
   SLE_PRODUCT must be defined and set to sles4sap.
   And of course, YAML_SCHEDULE must point to this file.
-vars:
-  BOOT_HDD_IMAGE: '1'
-  DESKTOP: textmode
-  SUPPORT_SERVER: '1'
-  SUPPORT_SERVER_ROLES: dhcp,dns,ntp,ssh,iscsi
-  VIDEOMODE: text
-  VIRTIO_CONSOLE: '1'
-  # Below have to be entered in the OpenQA UI because it doesn't read this YAML
-  # HDD_1: openqa_support_server_sles12sp3.%ARCH%.qcow2
 schedule:
   - support_server/login
   - support_server/setup
   - ha/barrier_init
+  - sles4sap/prepare_qemu_instances
+  - sles4sap/HanaSR_stop_primary_site_A
+  - sles4sap/HanaSR_stop_primary_site_B
+  - sles4sap/HanaSR_kill_primary_site_A
+  - sles4sap/HanaSR_kill_primary_site_B
+  - sles4sap/HanaSR_crash_primary_site_A
+  - sles4sap/HanaSR_crash_primary_site_B
+  - sles4sap/HanaSR_stop_secondary_site_B
   - support_server/wait_children

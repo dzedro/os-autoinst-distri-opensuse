@@ -10,13 +10,13 @@
 use base "sles4sap";
 use strict;
 use warnings;
-use testapi;
+use testapi qw(is_serial_terminal :DEFAULT);
 
 sub test_python3 {
     my ($self) = @_;
 
     my $output = script_output "python --version";
-    save_screenshot;
+    save_screenshot unless is_serial_terminal;
     die "Wrong Python version" unless ($output =~ /Python 3/);
 
     assert_script_run "cdpy && chmod u+w . && python -m compileall *.py";
@@ -25,7 +25,7 @@ sub test_python3 {
     return unless get_var('CLUSTER_NAME');
 
     assert_script_run "cdpy; python getParameter.py net_publicname";
-    save_screenshot;
+    save_screenshot unless is_serial_terminal;
 }
 
 sub run {
@@ -53,7 +53,7 @@ sub run {
         assert_script_run 'lvs -ao +devices vg_hana';
         assert_script_run 'df -k | grep vg_hana';
     }
-    save_screenshot;
+    save_screenshot unless is_serial_terminal;
 
     # The SAP Admin was set in sles4sap/wizard_hana_install
     my $sid = get_required_var('INSTANCE_SID');

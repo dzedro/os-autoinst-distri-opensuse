@@ -19,7 +19,7 @@ sub run {
     $self->select_serial_terminal;
 
     diag "Waiting for barrier $cluster_name...";
-    barrier_wait("BARRIER_HA_$cluster_name");
+    barrier_wait("BARRIER_SLES4SAP_$cluster_name");
 }
 
 1;

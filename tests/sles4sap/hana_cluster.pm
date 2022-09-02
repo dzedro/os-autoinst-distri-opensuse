@@ -34,6 +34,10 @@ sub run {
     my $node1 = choose_node(1);
     my $node2 = choose_node(2);
 
+    foreach ($node1, $node2) {
+        add_to_known_hosts($_);
+    }
+
     if (is_node(1)) {
         # Create the resource configuration
         my $cluster_conf = 'hana_cluster.conf';
@@ -48,9 +52,6 @@ sub run {
             '%VIRTUAL_IP_ADDRESS%' => $virtual_ip,
             '%VIRTUAL_IP_NETMASK%' => $virtual_netmask);
 
-        foreach ($node1, $node2) {
-            add_to_known_hosts($_);
-        }
         assert_script_run "scp -qr /usr/sap/$sid/SYS/global/security/rsecssfs/* root\@$node2:/usr/sap/$sid/SYS/global/security/rsecssfs/";
         assert_script_run qq(su - $sapadm -c "hdbsql -u system -p $sles4sap::instance_password -i $instance_id -d SYSTEMDB \\"BACKUP DATA FOR FULL SYSTEM USING FILE ('backup')\\""), 300;
         assert_script_run "su - $sapadm -c 'hdbnsutil -sr_enable --name=$node1'";

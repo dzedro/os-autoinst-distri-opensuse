@@ -44,6 +44,9 @@ sub run {
             barrier_create("BARRIER_HA_$cluster_name", $num_nodes + 1);
         }
 
+        barrier_create("BARRIER_REPLICATION_READY_$cluster_name", $num_nodes + 1);
+        barrier_create("BARRIER_REPLICATION_DONE_$cluster_name", $num_nodes + 1);
+
         # Create barriers for HA clusters
         barrier_create("CLUSTER_INITIALIZED_$cluster_name", $num_nodes);
         barrier_create("NODE_JOINED_$cluster_name", $num_nodes);

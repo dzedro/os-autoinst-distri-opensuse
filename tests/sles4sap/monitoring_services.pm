@@ -170,6 +170,7 @@ sub configure_node_exporter {
     # Install and start node_exporter
     zypper_call 'in golang-github-prometheus-node_exporter';
     systemctl 'enable --now prometheus-node_exporter';
+    sleep 2;
     systemctl 'status prometheus-node_exporter';
 
     # Check that node_exporter is working as expected

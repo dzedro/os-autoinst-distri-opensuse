@@ -73,6 +73,12 @@ sub run {
     $instance->wait_for_guestregister();
     $args->{my_provider} = $provider;
     $args->{my_instance} = $instance;
+
+    printf "TADA\n";
+    printf "$args\n";
+    printf "$args->{my_provider}\n";
+    printf "$args->{my_instance}\n";
+
     $instance->ssh_opts("");    # Clear $instance->ssh_opts which ombit the known hosts file and strict host checking by default
 
     $instance->network_speed_test();

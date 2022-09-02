@@ -18,6 +18,7 @@ use testapi qw(is_serial_terminal :DEFAULT);
 use lockapi;
 use isotovideo;
 use x11utils 'ensure_unlocked_desktop';
+use services::ntpd;
 
 our @EXPORT = qw(
   $crm_mon_cmd
@@ -935,8 +936,25 @@ Enables NTP service in SUT.
 =cut
 
 sub activate_ntp {
-    my $ntp_service = is_sle('15+') ? 'chronyd' : 'ntpd';
-    systemctl "enable --now $ntp_service.service";
+    if (is_sle('15+')) {
+        zypper_call('in chrony');
+        systemctl 'enable --now chronyd.service';
+        script_run qq(timeout 185 bash -c 'until chronyc activity|grep "0 sources doing burst.*online"; do sleep 1; echo "waiting for ntp sources response"; done' -k), 200;
+        assert_script_run 'chronyc sources';
+        assert_script_run 'chronyc tracking';
+        assert_script_run 'chronyc activity';
+        assert_script_run 'chronyc waitsync 120 0.5', 200;
+    }
+    else {
+        services::ntpd::config_service();
+        systemctl "restart ntpd.service";
+        assert_script_run 'ntpq -p';
+        for (my $i = 0; $i < 5; $i++) {
+            return if script_run('ntpq -p|grep ^*');
+            sleep 30;
+        }
+        die "Configuration not loaded";
+    }
 }
 
 =head2 calculate_sbd_start_delay
