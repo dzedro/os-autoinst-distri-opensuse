@@ -60,6 +60,8 @@ sub has_conflict {
         rpm => 'rpm-ndb',
         # rpm-ndb can't be installed, it will remove rpm and break rpmdb2solv -> zypper
         'rpm-ndb' => 'rpm-ndb',
+        # 
+        'rmt-server-pubcloud' => 'rmt-server-pubcloud',
         'SAPHanaSR-ScaleOut' => 'SAPHanaSR',
         'SAPHanaSR-ScaleOut-doc' => 'SAPHanaSR-doc',
         'dapl-devel' => 'dapl-debug-devel',
