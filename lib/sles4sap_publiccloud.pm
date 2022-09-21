@@ -216,7 +216,7 @@ sub stop_hana {
     my %commands = (
         "stop"  => "HDB stop",
         "kill"  => "HDB kill -x",
-        "crash" => "sync; echo b | tee /proc/sysrq-trigger > /dev/null &"
+        "crash" => "echo b | tee /proc/sysrq-trigger > /dev/null &"
     );
 
     my $cmd = $commands{$method};
@@ -226,7 +226,8 @@ sub stop_hana {
 
     record_info("Stopping HANA", "CMD:$cmd");
     if ($method eq "crash") {
-        $self->{my_instance}->run_ssh_command(cmd => "sudo $cmd", timeout => "0", %args);
+        $self->{my_instance}->run_ssh_command(cmd => "sudo su -c sync", timeout => "0", %args);
+        $self->{my_instance}->run_ssh_command(cmd => "sudo su -c $cmd", timeout => "0", %args);
         #$self->run_cmd(cmd => $cmd, timeout => $timeout);
         sleep 30;
         $self->{my_instance}->wait_for_ssh();
@@ -234,6 +235,16 @@ sub stop_hana {
     }
     else {
         $self->run_cmd(cmd => $cmd, runas=>"hdbadm" , timeout => $timeout);
+    }
+
+    # Wait for resource to stop
+    my $start_time = time;
+    while ($self->is_hana_resource_running() == 1) {
+        if (time - $start_time > $timeout){
+            record_info("Cluster status", $self->run_cmd(cmd => $crm_mon_cmd));
+            die("DB stop operation timed out($timeout sec).");
+        }
+        sleep 30;
     }
 }
 
