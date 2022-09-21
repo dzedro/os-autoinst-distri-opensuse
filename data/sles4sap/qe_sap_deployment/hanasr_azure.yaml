@@ -29,7 +29,7 @@ ansible:
     - "%HANA_CLIENT_SAR%"
     - "%HANA_SAPCAR%"
   create:
-    - registration.yaml -e reg_code=%SCC_REGCODE_SLES4SAP% -e email_address=""
+    - registration.yaml -e reg_code=%SCC_REGCODE_SLES4SAP% -e email_address="" -e scc_url=%SCC_URL%
     - pre-cluster.yaml
     - sap-hana-preconfigure.yaml -e use_sapconf=${SAPCONF}
     - cluster_sbd_prep.yaml

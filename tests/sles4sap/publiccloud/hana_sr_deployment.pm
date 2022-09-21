@@ -40,6 +40,7 @@ sub qesap_get_variables {
     $variables{HANA_CLIENT_SAR} = get_required_var("HANA_CLIENT_SAR");
     $variables{HANA_SAPCAR} = get_required_var("HANA_SAPCAR");
     $variables{SCC_REGCODE_SLES4SAP} = get_required_var("SCC_REGCODE_SLES4SAP");
+    $variables{SCC_URL} = get_required_var("SCC_URL");
     $variables{STORAGE_ACCOUNT_NAME} = get_var("STORAGE_ACCOUNT_NAME");
     $variables{STORAGE_ACCOUNT_KEY} = get_var("STORAGE_ACCOUNT_KEY");
     $variables{PUBLIC_CLOUD_RESOURCE_NAME} = get_var("PUBLIC_CLOUD_RESOURCE_NAME");
