@@ -18,6 +18,7 @@ sub test_flags {
     };
 }
 
+# Post run hook does the cleanup thing.
 sub run {
     record_info("Performing cleanup");
 }

@@ -1,12 +1,12 @@
 package sles4sap_publiccloud_basetest;
 
-use base 'consoletest';
-use Mojo::Base 'publiccloud::basetest';
+use base 'publiccloud::basetest';
 use strict;
 use warnings FATAL => 'all';
+use Exporter 'import';
 use testapi;
-use qesapdeployment;
 use sles4sap_publiccloud;
+use qesapdeployment;
 
 sub cleanup {
     my ($self) = @_;

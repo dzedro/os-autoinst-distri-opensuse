@@ -1,7 +1,15 @@
+# SUSE's openQA tests
+#
+# Copyright SUSE LLC
+# SPDX-License-Identifier: FSFAP
+# Maintainer: QE-SAP <qe-sap@suse.de>
+# Summary:
+
 use base 'sles4sap_publiccloud_basetest';
 use strict;
 use warnings FATAL => 'all';
 use testapi;
+use Data::Dumper;
 
 sub run {
     my ($self, $run_args) = @_;
@@ -12,7 +20,6 @@ sub run {
 
     # Switch to control Site B (currently replica mode)
     $self->{my_instance} = $site_b;
-
     my $cluster_status = $self->run_cmd(cmd => "crm status");
     record_info("Cluster status", $cluster_status);
     # Check initial state: 'site B' = replica mode
@@ -20,8 +27,22 @@ sub run {
       $self->get_promoted_hostname() eq $site_b->{instance_id};
 
     # Stop DB
-    record_info("Stop DB", "Stopping Site B ('$site_b->{instance_id}')");
-    $self->stop_hana(method => "kill");
+    # check variable DB_ACTION in case of separate usage of the test.
+    my $db_action = get_var("DB_ACTION", $run_args->{hana_test_definitions}{$self->{name}});
+    if ($db_action eq "stop") {
+        record_info("Stop DB", "Stopping Site B ('$site_b->{instance_id}')");
+    }
+    elsif ($db_action eq "kill") {
+        record_info("Kill DB", "Killing Site B ('$site_b->{instance_id}')");
+    }
+    elsif ($db_action eq "crash") {
+        record_info("Crash DB", "Crashing OS on Site B ('$site_b->{instance_id}')");
+    }
+    else {
+        die("Database action unknown or not defined.");
+    }
+
+    $self->stop_hana(method => $db_action);
 
     # wait for DB to start with resources
     $self->is_hana_online(wait_for_start => 'true');
@@ -31,7 +52,6 @@ sub run {
         sleep 30;
     }
 
-
     # Check if DB started as primary
     die("Site B '$site_b->{instance_id}' did NOT start in replication mode.")
       if $self->get_promoted_hostname() eq $site_b->{instance_id};
@@ -40,7 +60,7 @@ sub run {
 }
 
 sub test_flags {
-    return {fatal => 1};
+    return {fatal => 1, publiccloud_multi_module => 1};
 }
 
 1;

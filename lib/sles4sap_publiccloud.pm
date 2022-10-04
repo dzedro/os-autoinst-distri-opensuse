@@ -7,13 +7,13 @@
 
 package sles4sap_publiccloud;
 
-use parent 'Exporter';
+use base 'publiccloud::basetest';
 use strict;
 use warnings FATAL => 'all';
-use Mojo::Base 'publiccloud::basetest';
+use Exporter 'import';
 use version_utils 'is_sle';
 use publiccloud::utils;
-use publiccloud::instance;
+use publiccloud::provider;
 use testapi;
 use List::MoreUtils qw(uniq);
 use Data::Dumper;
