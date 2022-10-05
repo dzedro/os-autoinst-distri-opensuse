@@ -117,11 +117,13 @@ sub qesap_pip_install {
 =cut
 
 sub qesap_upload_logs {
-    my (%args) = @_;
+    my ($self, %args) = @_;
     my $failok = $args{failok};
     record_info("Uploading logfiles", join("\n", @log_files));
-    while (my $file = pop @log_files) {
-        upload_logs($file, failok => $failok);
+    for my $file (@log_files) {
+        my $file_name = (split("/", $file))[-1];
+        $file_name =~ s/[^\d\w.-_]/_/g;
+        upload_logs($file, failok => $failok, log_name=>$file_name);
     }
 }
 
