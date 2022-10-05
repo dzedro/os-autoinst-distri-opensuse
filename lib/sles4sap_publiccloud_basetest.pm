@@ -12,7 +12,7 @@ sub cleanup {
     my ($self) = @_;
     die("Cleanup already called") if ($self->{cleanup_called});
     $self->{cleanup_called} = 1;
-    qesap_execute(verbose => "--verbose", cmd => "terraform", cmd_options => "-d", timeout => 600);
+    qesap_execute(verbose => "--verbose", cmd => "terraform", cmd_options => "-d", timeout => 1200);
     record_info("Cleanup executed");
 }
 

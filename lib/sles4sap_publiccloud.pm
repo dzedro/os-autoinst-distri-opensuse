@@ -16,6 +16,7 @@ use publiccloud::utils;
 use publiccloud::provider;
 use testapi;
 use List::MoreUtils qw(uniq);
+use utils 'file_content_replace';
 use Data::Dumper;
 
 our @EXPORT = qw(
@@ -33,6 +34,7 @@ our @EXPORT = qw(
   cleanup_resource
   get_promoted_instance
   wait_for_sync
+  wait_for_pacemaker
 );
 
 # Global variables
@@ -406,6 +408,29 @@ sub wait_for_sync {
         sleep 30;
     }
     record_info("Sync OK", $self->run_cmd(cmd => "SAPHanaSR-showAttr"));
+    return 1;
+}
+
+=head2 wait_for_pacemaker
+    wait_for_pacemaker();
+    Checks status of pacemaker via 'is-active' command an waits for startup.
+
+=cut
+sub wait_for_pacemaker {
+    my ($self, %args) = @_;
+    my $start_time = time;
+    my $timeout = bmwqemu::scale_timeout($args{timeout} // 300);
+    my $systemd_cmd = "systemctl --no-pager is-active pacemaker";
+    my $pacemaker_state = "";
+
+    while ($pacemaker_state ne "active") {
+        sleep 15;
+        $pacemaker_state = $self->run_cmd(cmd => $systemd_cmd, proceed_on_failure => 1);
+        if (time - $start_time > $timeout) {
+            record_info("Pacemaker status", $self->run_cmd(cmd => "systemctl --no-pager status pacemaker"));
+            die("Pacemaker did not start within defined timeout");
+        }
+    }
     return 1;
 }
 

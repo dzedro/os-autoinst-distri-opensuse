@@ -77,7 +77,7 @@ sub run {
         copy_ssh_keys();
     }
     if (!get_var("HA_SAP_TERRAFORM_DEPLOYMENT")) {
-        qesap_prepare_env(openqa_variables => \%variables);
+        qesap_prepare_env(openqa_variables => \%variables, provider => get_required_var('PUBLIC_CLOUD_PROVIDER'));
         $provider->{terraform_env_prepared} = 1;
     }
 

@@ -14,7 +14,8 @@ use testapi;
 
 sub test_flags {
     return {
-        fatal => 1
+        fatal => 1,
+        publiccloud_multi_module=>0
     };
 }
 

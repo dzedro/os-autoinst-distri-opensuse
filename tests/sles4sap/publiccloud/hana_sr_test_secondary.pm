@@ -44,6 +44,12 @@ sub run {
 
     $self->stop_hana(method => $db_action);
 
+    if ($db_action eq "crash"){
+        $self->{my_instance}->wait_for_ssh(username => 'cloudadmin');
+        sleep 10;
+        $self->wait_for_pacemaker();
+    }
+
     # wait for DB to start with resources
     $self->is_hana_online(wait_for_start => 'true');
     my $hana_started = time;
