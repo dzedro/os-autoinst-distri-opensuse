@@ -43,6 +43,7 @@ sub qesap_get_variables {
     $variables{STORAGE_ACCOUNT_NAME} = get_var("STORAGE_ACCOUNT_NAME");
     $variables{STORAGE_ACCOUNT_KEY} = get_var("STORAGE_ACCOUNT_KEY");
     $variables{PUBLIC_CLOUD_RESOURCE_NAME} = get_var("PUBLIC_CLOUD_RESOURCE_NAME");
+    $variables{PUBLIC_CLOUD_IMAGE_LOCATION} = get_var("PUBLIC_CLOUD_IMAGE_LOCATION");
     $variables{FENCING_MECHANISM} = get_var("FENCING_MECHANISM", "sbd");
 
     return(%variables);
