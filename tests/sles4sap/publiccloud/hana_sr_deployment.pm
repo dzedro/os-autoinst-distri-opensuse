@@ -36,6 +36,7 @@ sub qesap_get_variables {
     $variables{SCC_REGCODE_SLES4SAP} = get_required_var("SCC_REGCODE_SLES4SAP");
     $variables{STORAGE_ACCOUNT_NAME} = get_var("STORAGE_ACCOUNT_NAME");
     $variables{STORAGE_ACCOUNT_KEY} = get_var("STORAGE_ACCOUNT_KEY");
+    $variables{PUBLIC_CLOUD_OS_IMAGE} = get_var("PUBLIC_CLOUD_OS_IMAGE");
     $variables{PUBLIC_CLOUD_RESOURCE_NAME} = get_var("PUBLIC_CLOUD_RESOURCE_NAME");
     $variables{FENCING_MECHANISM} = get_var("FENCING_MECHANISM", "sbd");
 

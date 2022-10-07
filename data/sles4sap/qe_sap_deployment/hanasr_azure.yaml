@@ -5,6 +5,7 @@ terraform:
   variables:
     # GENERAL VARIABLES #
     az_region: "%REGION%"
+    os_image: "%PUBLIC_CLOUD_OS_IMAGE%"
     admin_user: "cloudadmin"
     public_key : "~/.ssh/id_rsa.pub"
     private_key: "~/.ssh/id_rsa"
