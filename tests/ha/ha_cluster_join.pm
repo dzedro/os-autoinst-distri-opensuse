@@ -49,7 +49,8 @@ sub run {
     barrier_wait("CLUSTER_INITIALIZED_$cluster_name");
 
     # Try to join the HA cluster through first node
-    assert_script_run "ping -c1 $node_to_join";
+    assert_script_run "until ping -c1 $node_to_join; do sleep 2; done";
+
     # Status redirection is not needed if running on serial terminal
     my $redirection = is_serial_terminal() ? '' : "> /dev/$serialdev";
     enter_cmd "ha-cluster-join -yc $node_to_join ; echo ha-cluster-join-finished-\$? $redirection";
