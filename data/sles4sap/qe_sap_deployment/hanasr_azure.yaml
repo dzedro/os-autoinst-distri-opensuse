@@ -1,5 +1,5 @@
 provider: 'azure'
-apiver: 1
+apiver: 2
 terraform:
   provider: 'azure'
   variables:
