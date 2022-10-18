@@ -42,6 +42,7 @@ sub run_test {
 }
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     # Arrayss for test specs

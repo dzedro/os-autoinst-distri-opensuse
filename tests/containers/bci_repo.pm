@@ -71,6 +71,7 @@ sub prepare_repo {
 my $errors = 0;
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal;
 
     # download and start a BCI container

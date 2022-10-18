@@ -17,6 +17,7 @@ use utils;
 use lockapi;
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     my $trex_dir = "/tmp/trex-core";

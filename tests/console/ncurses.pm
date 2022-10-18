@@ -19,6 +19,7 @@ use serial_terminal 'select_serial_terminal';
 use utils qw(clear_console zypper_call);
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
     zypper_call 'in dialog';
     select_console 'root-console';

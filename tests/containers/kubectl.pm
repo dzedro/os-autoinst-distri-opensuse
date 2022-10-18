@@ -18,6 +18,7 @@ use publiccloud::utils;
 use containers::k8s;
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal;
 
     install_kubectl();

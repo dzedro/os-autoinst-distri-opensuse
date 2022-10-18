@@ -67,6 +67,7 @@ sub packages_to_install {
 }
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal;
 
     # Wait for any zypper tasks in the background to finish

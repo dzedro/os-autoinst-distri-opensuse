@@ -15,7 +15,7 @@ use publiccloud::utils;
 use qesapdeployment;
 use Data::Dumper;
 use Storable;
-
+use serial_terminal 'select_serial_terminal';
 
 sub test_flags {
     return {fatal => 1, publiccloud_multi_module => 1};
@@ -51,7 +51,7 @@ sub run {
     my $instances_export_path = get_var("INSTANCES_EXPORT") // undef;
     my %variables = qesap_get_variables();
 
-    $self->select_serial_terminal;
+    select_serial_terminal;
 
     # TODO: DEPLOYMENT SKIP - REMOVE!!!
     # Do not cleanup if deployment skip

@@ -20,6 +20,7 @@ use registration qw(add_suseconnect_product);
 
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     # Add required product

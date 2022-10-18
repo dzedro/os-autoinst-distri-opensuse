@@ -15,6 +15,7 @@ use utils qw(zypper_call systemctl);
 use version_utils qw(is_sle);
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     # Install keylime packages

@@ -22,6 +22,7 @@ use utils;
 use version_utils 'is_sle';
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     my $ofed_url = get_required_var('OFED_URL');

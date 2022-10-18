@@ -25,6 +25,7 @@ sub pynfs_server_test_all {
 }
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     if (get_var("PYNFS")) {

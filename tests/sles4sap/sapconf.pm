@@ -82,6 +82,8 @@ sub verify_sapconf_service {
 }
 
 sub run {
+    my ($self) = @_;
+
     select_serial_terminal;
 
     assert_script_run("rpm -q sapconf");

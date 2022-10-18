@@ -27,6 +27,7 @@ sub build_mt {
 
 sub run {
     #Preparation
+    my $self = shift;
     select_serial_terminal;
 
     # Call macros to make sure they are available

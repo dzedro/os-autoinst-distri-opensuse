@@ -51,6 +51,7 @@ sub check_bsc1142979 {
 }
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal;
 
     # Make sure nfs-server packages are installed

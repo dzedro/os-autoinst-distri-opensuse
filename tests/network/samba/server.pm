@@ -17,6 +17,7 @@ use version_utils;
 use registration;
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal;
 
     zypper_call "in samba samba-winbind";

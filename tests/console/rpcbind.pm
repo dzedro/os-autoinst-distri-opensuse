@@ -21,6 +21,7 @@ use utils qw(systemctl zypper_call);
 use services::rpcbind;
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal();
     services::rpcbind::install_service();
     services::rpcbind::check_install();

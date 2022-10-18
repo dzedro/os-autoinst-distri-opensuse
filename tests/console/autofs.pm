@@ -26,6 +26,7 @@ use serial_terminal 'select_serial_terminal';
 use autofs_utils;
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
     autofs_utils::configure_service('function');
     autofs_utils::check_function();

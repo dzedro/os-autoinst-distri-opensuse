@@ -24,6 +24,7 @@ use serial_terminal 'select_serial_terminal';
 use version;
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
     zypper_call 'in sysstat';
     script_run 'rm -rf /var/log/sa/sa*';

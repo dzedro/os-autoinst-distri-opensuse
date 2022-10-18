@@ -23,6 +23,7 @@ use apachetest qw(setup_pgsqldb destroy_pgsqldb test_pgsql postgresql_cleanup);
 use Utils::Systemd 'systemctl';
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     # install the postgresql server package

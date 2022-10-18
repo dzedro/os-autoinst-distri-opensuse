@@ -37,6 +37,7 @@ sub upload_tarball {
 }
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     # Finalize status log and upload it

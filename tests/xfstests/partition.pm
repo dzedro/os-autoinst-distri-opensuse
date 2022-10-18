@@ -277,6 +277,7 @@ sub format_with_options {
 }
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     # DO NOT set XFSTESTS_DEVICE if you don't know what's this mean

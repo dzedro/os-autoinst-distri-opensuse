@@ -17,6 +17,7 @@ use strict;
 use warnings;
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal;
 
     zypper_call 'in systemd-container';

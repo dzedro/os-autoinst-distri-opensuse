@@ -79,6 +79,7 @@ EOF
 (exit $?)';
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal;
 
     # make sure the package was installed.

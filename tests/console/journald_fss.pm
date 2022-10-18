@@ -23,6 +23,7 @@ use serial_terminal 'select_serial_terminal';
 use utils;
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal;
 
     # Enable FSS (Forward Secure Sealing)

@@ -32,6 +32,7 @@ use warnings;
 use utils 'zypper_call';
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal;
     zypper_call('in netcat lsof psmisc');
     assert_script_run("lsof");

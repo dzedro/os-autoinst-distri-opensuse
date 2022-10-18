@@ -33,6 +33,7 @@ sub mod_jk_setup() {
 
 # Connection from apache2 to tomcat: Functionality test
 sub func_conn_apache2_tomcat() {
+    my $self = shift;
     select_serial_terminal();
     systemctl('stop apache2');
     systemctl('stop tomcat');

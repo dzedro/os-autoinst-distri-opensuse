@@ -28,6 +28,7 @@ use version_utils qw(is_jeos is_opensuse);
 use registration 'add_suseconnect_product';
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal;
     if (is_jeos && !is_opensuse) {
         my $version = get_required_var('VERSION') =~ s/([0-9]+).*/$1/r;

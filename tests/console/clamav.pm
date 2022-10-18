@@ -40,6 +40,7 @@ sub scan_and_parse {
 }
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     zypper_call('in clamav vim');

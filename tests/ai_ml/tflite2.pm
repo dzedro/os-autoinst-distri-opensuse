@@ -17,6 +17,8 @@ use utils;
 use version_utils qw(is_opensuse is_leap);
 
 sub run {
+    my ($self) = @_;
+
     select_serial_terminal;
     # Install required software
     my $ret;

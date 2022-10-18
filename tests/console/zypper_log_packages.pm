@@ -18,6 +18,7 @@ use Utils::Logging;
 use Mojo::JSON qw(to_json);
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
     my $zypper_packages = {};
     $zypper_packages->{commands} = $testapi::distri->{zypper_packages} // [];

@@ -29,6 +29,7 @@ use utils 'zypper_call';
 use Utils::Architectures;
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     zypper_call 'in vsftpd expect';

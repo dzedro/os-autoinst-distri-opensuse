@@ -22,6 +22,7 @@ use version_utils qw(is_sle is_opensuse is_tumbleweed);
 use registration qw(add_suseconnect_product get_addon_fullname);
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     # 1. System setup

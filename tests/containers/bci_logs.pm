@@ -19,6 +19,7 @@ use serial_terminal 'select_serial_terminal';
 use File::Basename;
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal;
 
     my $dom = XML::LibXML::Document->new('1.0', 'utf-8');

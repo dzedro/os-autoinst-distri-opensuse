@@ -19,6 +19,7 @@ use rancher::utils;
 use containers::common;
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal;
 
     mutex_wait('support_server_ready');

@@ -14,6 +14,7 @@ use strict;
 use warnings;
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     # Switch to the original folder contains the key/password files

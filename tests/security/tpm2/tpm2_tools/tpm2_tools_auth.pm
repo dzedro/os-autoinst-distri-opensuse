@@ -14,6 +14,7 @@ use testapi;
 use serial_terminal 'select_serial_terminal';
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     # Modify authorization for a loadable transient object

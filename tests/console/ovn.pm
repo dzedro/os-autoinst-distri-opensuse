@@ -27,6 +27,7 @@ use version_utils 'is_tumbleweed';
 
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     zypper_call('in openvswitch ovn ovn-central ovn-devel ovn-docker ovn-host ovn-vtep', timeout => 300);

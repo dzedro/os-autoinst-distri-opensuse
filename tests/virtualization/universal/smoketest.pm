@@ -35,6 +35,7 @@ my %cves = (
 );
 
 sub run_test {
+    my $self = shift;
     select_serial_terminal;
 
     # Print latest Kernel version

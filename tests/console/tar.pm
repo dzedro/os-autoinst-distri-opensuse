@@ -15,6 +15,8 @@ use utils;
 use version_utils qw(is_sle);
 
 sub run {
+
+    my $self = shift;
     select_serial_terminal;
 
     assert_script_run "wget --quiet " . data_url('console/tar_test.tar');

@@ -14,6 +14,7 @@ use serial_terminal 'select_serial_terminal';
 use utils;
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal;
 
     my $sample_dir = '/tmp/ima_tests';

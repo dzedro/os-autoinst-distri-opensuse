@@ -14,6 +14,7 @@ use serial_terminal 'select_serial_terminal';
 use apachetest;
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
     setup_apache2(mode => 'NSSFIPS');
 }

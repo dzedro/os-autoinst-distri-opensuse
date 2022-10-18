@@ -20,6 +20,7 @@ use version_utils 'is_sle';
 our $trinity_log;
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal;
     $trinity_log = script_output("echo ~$testapi::username/trinity.log");
     my $syscall_cnt = 1000000;

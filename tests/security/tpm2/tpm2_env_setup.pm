@@ -16,6 +16,7 @@ use power_action_utils 'power_action';
 use version_utils 'is_sle';
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     # Install the tpm2.0 related packages

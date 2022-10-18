@@ -31,6 +31,7 @@ use registration qw(add_suseconnect_product get_addon_fullname);
 use apachetest;
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     my ($php, $php_pkg, $php_ver) = php_version();

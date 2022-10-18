@@ -15,6 +15,7 @@ use services::nginx;
 use utils 'clear_console';
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     services::nginx::install_service();

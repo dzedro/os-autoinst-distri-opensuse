@@ -18,6 +18,7 @@ use utils;
 use version_utils;
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     assert_script_run 'ip a';

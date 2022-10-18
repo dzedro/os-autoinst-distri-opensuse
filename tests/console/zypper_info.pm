@@ -50,6 +50,7 @@ sub test_package_output {
 }
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     # check for zypper info

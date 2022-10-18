@@ -16,6 +16,7 @@ use utils;
 use version_utils 'is_opensuse';
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     record_info('INFO', 'Check environment');

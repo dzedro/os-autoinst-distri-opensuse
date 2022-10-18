@@ -119,6 +119,7 @@ sub setup_mail_server {
 }
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
     my $hostname = get_var('HOSTNAME');
     # Get variable SUPPORT_SERVER_ROLES from job settings.

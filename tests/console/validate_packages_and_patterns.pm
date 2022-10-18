@@ -67,6 +67,7 @@ sub verify_pattern {
 }
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     my $errors = '';    # Variable to accumulate errors

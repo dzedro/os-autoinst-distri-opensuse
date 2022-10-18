@@ -88,6 +88,7 @@ sub setup_nfs_server {
 }
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
 
     # Disable PackageKit

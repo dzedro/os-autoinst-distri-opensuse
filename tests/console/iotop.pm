@@ -18,6 +18,7 @@ use serial_terminal 'select_serial_terminal';
 use utils 'zypper_call';
 
 sub run {
+    my $self = shift;
     select_serial_terminal;
     zypper_call 'in iotop';
 

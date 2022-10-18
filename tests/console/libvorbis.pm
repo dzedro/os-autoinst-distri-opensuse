@@ -22,6 +22,7 @@ use registration 'add_suseconnect_product';
 
 sub run {
     # setup
+    my ($self) = @_;
     select_serial_terminal;
 
     add_suseconnect_product('sle-module-desktop-applications') if is_sle && !main_common::is_updates_tests();
