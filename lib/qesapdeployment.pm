@@ -117,13 +117,11 @@ sub qesap_pip_install {
 =cut
 
 sub qesap_upload_logs {
-    my ($self, %args) = @_;
+    my (%args) = @_;
     my $failok = $args{failok};
     record_info("Uploading logfiles", join("\n", @log_files));
-    for my $file (@log_files) {
-        my $file_name = (split("/", $file))[-1];
-        $file_name =~ s/[^\d\w.-_]/_/g;
-        upload_logs($file, failok => $failok, log_name=>$file_name);
+    while (my $file = pop @log_files) {
+        upload_logs($file, failok => $failok);
     }
 }
 
@@ -193,14 +191,11 @@ sub qesap_yaml_replace {
 }
 
 =head3 qesap_execute
-
     qesap_execute(cmd => $qesap_script_cmd [, verbose => 1, cmd_options => $cmd_options] );
     cmd_options - allows to append additional qesap.py commans arguments like "qesap.py terraform -d"
         Example:
         qesap_execute(cmd => 'terraform', cmd_options => '-d') will result in:
         qesap.py terraform -d
-
-    cmd_options - allows to append additional qesap.py commans arguments like "qesap.py terraform -d"
     Execute qesap glue script commands. Check project documentation for available options:
     https://github.com/SUSE/qe-sap-deployment
     Test only returns execution result, failure has to be handled by calling method.
@@ -212,7 +207,13 @@ sub qesap_execute {
 
     my $verbose = $args{verbose} ? "--verbose" : "";
     my %paths = qesap_get_file_paths();
-    my $exec_log = "/tmp/qesap_exec_" . $args{cmd} . ".log.txt";
+    $args{cmd_options} ||= '';
+
+    my $exec_log = "/tmp/qesap_exec_$args{cmd}";
+    $exec_log .= "_$args{cmd_options}" if ($args{cmd_options});
+    $exec_log .= '.log.txt';
+    $exec_log =~ s/[-\s]+/_/g;
+
     my $qesap_cmd = join(" ", $paths{deployment_dir} . "/scripts/qesap/qesap.py",
         $verbose,
         "-c", $paths{qesap_conf_trgt},
@@ -224,9 +225,10 @@ sub qesap_execute {
     );
 
     push(@log_files, $exec_log);
-    record_info("QESAP exec", "Executing: \n" . $qesap_cmd);
-    assert_script_run($qesap_cmd, timeout => $args{timeout});
+    record_info('QESAP exec', "Executing: \n$qesap_cmd");
+    my $exec_rc = script_run($qesap_cmd, timeout => $args{timeout});
     qesap_upload_logs();
+    return $exec_rc;
 }
 
 =head3 qesap_get_inventory
