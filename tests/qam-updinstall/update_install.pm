@@ -146,6 +146,8 @@ sub run {
     my @l3 = grep { ($bins{$_}->{supportstatus} eq 'l3') } keys %bins;
     my @unsupported = grep { ($bins{$_}->{supportstatus} eq 'unsupported') } keys %bins;
 
+    zypper_call("rm libvpd2", exitcode => [0, 102, 103], timeout => 1500);
+
     for my $patch (split(/\s+/, $patches)) {
         my %patch_bins = %bins;
         my (@patch_l2, @patch_l3, @patch_unsupported);
