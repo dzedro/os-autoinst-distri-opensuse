@@ -312,11 +312,15 @@ sub check_takeover {
     my ($self) = @_;
     my $count = 15;
     my $hostname = $self->{my_instance}->{instance_id};
-    my $takeover_complete = 0;
     my $fenced_hana_status = $self->is_hana_online();
     die("Fenced database '$hostname' is not offline") if ($fenced_hana_status == 1);
 
-    while ($takeover_complete == 0 && $count--) {
+    LABEL: while ($count--) {
+        sleep 30;
+        $self->run_cmd(cmd => 'sapcontrol -nr 00 -function GetSystemInstanceList', runas => "hdbadm", proceed_on_failure => 1);
+        $self->run_cmd(cmd => 'sapcontrol -nr 00 -function GetProcessList', runas => "hdbadm", proceed_on_failure => 1);
+        record_info("Pacemaker status", $self->run_cmd(cmd => "systemctl --no-pager status pacemaker"));
+        die 'HANA replication: node did not sync in time' if $count == 1;
         my $topology = $self->get_hana_topology();
 
         for my $entry (@$topology) {
@@ -325,11 +329,9 @@ sub check_takeover {
             my $takeover_host = $host_entry{vhost};
 
             if ($takeover_host ne $hostname && $sync_state eq "PRIM") {
-                $takeover_complete = 1;
                 record_info("Takeover status:", "Takeover complete to node '$takeover_host'");
-                last;
+                last LABEL;
             }
-            sleep 30;
         }
     }
 
