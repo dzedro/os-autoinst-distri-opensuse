@@ -112,7 +112,7 @@ This function is deprecated. Please use ssh_script_retry instead.
 sub retry_ssh_command {
     my $self = shift;
     my %args = testapi::compat_args({cmd => undef}, ['cmd'], @_);
-    $args{rc_only} = 1;
+    #$args{rc_only} = 1;
     $args{timeout} //= 90;    # Timeout before we cancel the command
     my $tries = delete $args{retry} // 3;
     my $delay = delete $args{delay} // 10;
@@ -120,7 +120,9 @@ sub retry_ssh_command {
 
     for (my $try = 0; $try < $tries; $try++) {
         my $rc = $self->run_ssh_command(cmd => $cmd, %args);
-        return $rc if (defined $rc && $rc == 0);
+        record_soft_failure("retry_ssh_command $try") if $try >= 1;
+        #return $rc if (defined $rc && $rc == 0);
+        return $rc unless $rc =~ /-255-/;
         sleep($delay);
     }
     die "Waiting for Godot: " . $cmd;

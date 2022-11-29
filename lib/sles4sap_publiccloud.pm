@@ -66,7 +66,7 @@ sub run_cmd {
     delete($args{timeout});
     delete($args{runas});
 
-    my $out = $self->{my_instance}->run_ssh_command(cmd => "sudo $cmd", timeout => $timeout, %args);
+    my $out = $self->{my_instance}->retry_ssh_command(cmd => "sudo $cmd", timeout => $timeout, %args);
     record_info("$title output - $self->{my_instance}->{instance_id}", $out) unless ($timeout == 0 or $args{quiet} or $args{rc_only});
     return $out;
 }
