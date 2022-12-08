@@ -277,6 +277,7 @@ sub run {
         disable_test_repositories($repos_count);
         record_info 'Uninstall patch', "Uninstall patch $patch";
         # update repos are disabled, zypper dup will downgrade packages from patch
+        zypper_call("rm lsvpd libvpd libvpd-base", exitcode => [0, 104], timeout => 1500);
         zypper_call('dup -l', exitcode => [0, 8]);
         # remove patched packages with multiple versions installed e.g. kernel-source
         foreach (@patch_l3, @patch_l2) {
