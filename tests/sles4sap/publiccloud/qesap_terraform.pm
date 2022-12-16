@@ -31,6 +31,7 @@ use sles4sap_publiccloud;
 use serial_terminal 'select_serial_terminal';
 use Data::Dumper;
 use Storable;
+use version_utils 'is_sle';
 
 our $ha_enabled = set_var_output("HA_CLUSTER", "0") =~ /false|0/i ? 0 : 1;
 
@@ -162,15 +163,29 @@ sub run {
     $provider->{terraform_env_prepared} = 1;
     my @instances = $provider->create_instances(check_connectivity => 0);
     my @instances_export;
+    my $count = 0;
 
     foreach my $instance (@instances) {
         $self->{my_instance} = $instance;
         my $expected_hostname = $instance->{instance_id};
         push(@instances_export, $instance);
         $instance->wait_for_ssh();
-        # Does not fail for some reason.
+        if (is_sle('=12-sp5')) {
+            # this is basically sleep 30 with output for debugging, wait to detect hostname rename bug
+            $instance->run_ssh_command(cmd => 'sudo journalctl -f', proceed_on_failure => 1, timeout => 30);
+            while ($instance->run_ssh_command(cmd => 'sudo journalctl -n20', proceed_on_failure => 1) =~ /Detected hostname change: vmhana/) {
+                record_soft_failure('bsc#1206529');
+                $instance->run_ssh_command(cmd => "sudo sed -i 's/DHCLIENT_SET_HOSTNAME=\"yes\"/DHCLIENT_SET_HOSTNAME=\"no\"/' /etc/sysconfig/network/dhcp", proceed_on_failure => 1);
+                $instance->run_ssh_command(cmd => "sudo sed -i '\$ a\\WRITE_HOSTNAME_TO_HOSTS=\"no\"' /etc/sysconfig/network/dhcp", proceed_on_failure => 1);
+                $instance->run_ssh_command(cmd => "sudo systemctl restart wicked", proceed_on_failure => 1);
+                sleep 15;
+                redo if $instance->run_ssh_command(cmd => 'sudo systemctl status waagent|tail -n3|grep "Detected hostname change: vmhana', proceed_on_failure => 1);
+            }
+        }
         my $real_hostname = $instance->run_ssh_command(cmd => "hostname", username => "cloudadmin");
-        die if ($expected_hostname ne $real_hostname);
+        die "node hostname does not match expected hostname: $expected_hostname" if $count++ == 5;
+        redo if $expected_hostname ne $real_hostname;
+        #die "node hostname does not match expected hostname: $expected_hostname" if $expected_hostname ne $real_hostname;
     }
 
     # TODO: DEPLOYMENT SKIP - REMOVE!!!
