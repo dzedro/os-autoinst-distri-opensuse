@@ -236,6 +236,9 @@ sub run {
         record_info 'Install patch', "Install patch $patch";
         zypper_call("in -l -t patch $patch", exitcode => [0, 102, 103], log => "zypper_$patch.log", timeout => 1500);
 
+        zypper_call('rm postgresql14-devel', exitcode => [0, 102, 103, 104], timeout => 500);
+        zypper_call('rm postgresql10-devel', exitcode => [0, 102, 103, 104], timeout => 500) if check_var('ARCH', 'aarch64');
+
         # Install binaries newly added by the incident.
         if (scalar @new_binaries) {
             record_info 'Install new packages', "New packages: @new_binaries";
