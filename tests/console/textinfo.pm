@@ -35,6 +35,7 @@ use serial_terminal 'select_serial_terminal';
 
 # have various useful general info included in videos
 sub run {
+    sleep 30;
     select_serial_terminal;
     assert_script_run('curl -O ' . data_url('textinfo'));
     assert_script_run('chmod +x textinfo');
