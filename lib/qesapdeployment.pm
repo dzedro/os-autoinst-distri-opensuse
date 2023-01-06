@@ -288,6 +288,7 @@ sub qesap_execute {
     record_info('QESAP exec', "Executing: \n$qesap_cmd");
     my $exec_rc = script_run($qesap_cmd, timeout => $args{timeout});
     qesap_upload_logs();
+    printf "TADAA!: qesap_execute exec_rc: $exec_rc\n";
     return $exec_rc;
 }
 

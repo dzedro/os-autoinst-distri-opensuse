@@ -34,7 +34,8 @@ sub cleanup {
         # 3 attempts for both terraform and ansible cleanup
         for (1 .. 3) {
             my $cleanup_cmd_rc = qesap_execute(verbose => "--verbose", cmd => $command, cmd_options => "-d", timeout => 1200);
-            if ($cleanup_cmd_rc == 0) {
+            printf "TADAA!\n$cleanup_cmd_rc\n";
+            if ($cleanup_cmd_rc) {
                 diag(ucfirst($command) . " cleanup attempt # $_ PASSED.");
                 record_info("Clean $command", ucfirst($command) . " cleanup PASSED.");
                 last;
