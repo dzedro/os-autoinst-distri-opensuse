@@ -109,6 +109,8 @@ sub run {
     scan_and_parse "clamscan";
     scan_and_parse "clamdscan";
 
+    assert_script_run('false');
+
     # Clean up
     script_run "rm -f test.hdb";
     script_run "rm -rf eicar_test_files/";

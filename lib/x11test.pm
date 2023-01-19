@@ -80,6 +80,7 @@ sub test_terminal {
     send_key 'esc' if (check_var("DESKTOP", "gnome") && check_screen "$name-activities");
     $self->enter_test_text($name, cmd => 1);
     assert_screen "test-$name-1";
+    assert_script_run('false');
     send_key 'alt-f4';
 }
 
