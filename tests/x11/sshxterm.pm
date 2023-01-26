@@ -24,10 +24,7 @@ sub run {
     mouse_hide(1);
     x11_start_program('xterm');
     # Restart sshd service in case it is not started
-    enter_cmd("sudo systemctl restart sshd");
-    wait_still_screen(2, 2);
-    type_password;
-    send_key "ret";
+    utils::handle_pw_prompt(cmd => 'sudo systemctl restart sshd');
     enter_cmd("ssh -o StrictHostKeyChecking=no -XC root\@localhost xterm");
     assert_screen "ssh-second-xterm";
     $self->set_standard_prompt();

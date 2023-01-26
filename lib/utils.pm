@@ -2624,4 +2624,19 @@ sub handle_screen {
     return $exit;
 }
 
+sub handle_pw_prompt {
+    my %args = @_;
+    enter_cmd "expect -c '
+spawn $args{cmd}
+expect {
+    assword {
+        send $testapi::password\\n
+    }
+    -re \"~\s+#|~\s+>\" {
+        interact
+    }
+}'";
+    wait_still_screen(2, 4);
+}
+
 1;
