@@ -27,6 +27,7 @@ use maintenance_smelt qw(get_packagebins_in_modules get_incident_packages);
 use testapi;
 use serial_terminal 'select_serial_terminal';
 use version_utils qw(is_sle);
+use Data::Dumper;
 
 sub has_conflict {
     my $binary = shift;
@@ -54,9 +55,7 @@ sub has_conflict {
         'chrony-pool-suse' => 'chrony-pool-empty',
         libGLwM1 => 'libGLw1',
         libiterm1 => 'terminfo-iterm',
-        rust => 'rls',
         'rust-gdb' => 'cargo',
-        'openssl-1_0_0' => 'openssl-1_1',
         'libsamba-errors0' => 'samba-client-libs',
         rpm => 'rpm-ndb',
         # rpm-ndb can't be installed, it will remove rpm and break rpmdb2solv -> zypper
@@ -70,6 +69,34 @@ sub has_conflict {
     );
     return $conflict{$binary};
 }
+
+my @conflicting_packages = (
+    'cloud-netconfig-ec2', 'cloud-netconfig-gce', 'cloud-netconfig-azure',
+    'kernel-default-base', 'kernel-default-extra',
+    'kernel-azure', 'kernel-azure-base', 'kernel-rt', 'kernel-rt-base',
+    'kernel-xen', 'kernel-xen-base', 'xen-tools', 'xen-tools-domU',
+    'p11-kit-nss-trust', 'mozilla-nss-certs',
+    'rmt-server-config', 'rmt-server-pubcloud',
+    'reiserfs-kmp-default', 'cluster-md-kmp-default',
+    'dlm-kmp-default', 'gfs2-kmp-default', 'ocfs2-kmp-default',
+    'dpdk', 'dpdk-thunderx', 'dpdk-devel', 'dpdk-thunderx-devel',
+    'dpdk-kmp-default', 'dpdk-thunderx-kmp-default',
+    'pulseaudio-module-gconf', 'pulseaudio-module-gsettings',
+    'systemtap-sdt-devel', 'systemtap-headers',
+    'libldb2', 'libldb1', 'python3-ldb', 'python-ldb',
+    'chrony-pool-suse', 'chrony-pool-empty',
+    'libGLwM1', 'libGLw1', 'libiterm1', 'terminfo-iterm',
+    'libsamba-errors0', 'samba-client-libs',
+    'SAPHanaSR-ScaleOut', 'SAPHanaSR',
+    'SAPHanaSR-ScaleOut-doc', 'SAPHanaSR-doc',
+    'dapl-devel', 'dapl-debug-devel', 'dapl', 'dapl-debug',
+    'libdat2-2', 'dapl-debug-libs',
+    'libjpeg8-devel', 'libjpeg62-devel'
+);
+my @conflicting_packages_sle12 = ('apache2-utils', 'apache2-worker', 'apache2-prefork', 'apache2-example-pages', 'apache2-doc');
+
+# rpm-ndb can't be installed, it will remove rpm and break rpmdb2solv -> zypper
+my @blocked_packages = ('rpm-ndb', 'kernel-default-base');
 
 sub get_patch {
     my ($incident_id, $repos) = @_;
@@ -149,7 +176,11 @@ sub run {
 
     for my $patch (split(/\s+/, $patches)) {
         my %patch_bins = %bins;
-        my (@patch_l2, @patch_l3, @patch_unsupported);
+        my (@patch_l2, @patch_l3, @patch_unsupported, @update_conflicts);
+
+        # there can be clonflict which can not be auto resolved on zypper ver < 14
+        # like libstdc++6-devel-gcc10 conflcits with never libstdc++6-pp-12.2.1
+        my @remove = split(/,/, get_var('REMOVE_PREINSTALL_CONFLICTS', 0));
 
         # https://progress.opensuse.org/issues/131534
         next if $patch !~ /SUSE-SLE-Product-SLES-15-SP4-TERADATA/ && get_var('FLAVOR') =~ /TERADATA/;
@@ -171,20 +202,8 @@ sub run {
 
         # Make a list of the conflicting binaries in this patch.
         my @conflict_names = uniq pairmap {
-            map { $_ =~ /(^\s+(?<with_ext>\S*)(\.(?!src)\S* <))|^\s+(?<no_ext>\S*)/; $+{with_ext} // $+{no_ext} } @patchinfo[$a .. $b] } @ranges;
+            map { $_ =~ /(^\s+(?<with_ext>\S*)(\.(?!src)\S* <))|^\s+(?!srcpackage:)(?<no_ext>\S*)/; $+{with_ext} // $+{no_ext} } @patchinfo[$a .. $b] } @ranges;
         print "Conflict names: @conflict_names\n";
-
-        # Get the l3 released binaries. Only installed binaries can conflict.
-        my @installable_l3 = grep { $bins{$_}->{supportstatus} eq 'l3' } keys %installable;
-
-        # If not all l3 released binaries are in the conflict binaries, fail.
-        print "\nInstallable L3 @installable_l3\n";
-        for my $package (@installable_l3) {
-            my $hit = first { $package eq $_ } @conflict_names;
-            unless ($hit) {
-                record_info "Error", "$package is l3 but does not exist in the patch. The update may have been misconfigured";
-            }
-        }
 
         # separate binaries from this one patch based on patch info
         for my $b (@l2) { push(@patch_l2, $b) if grep($b eq $_, @conflict_names); }
@@ -202,56 +221,113 @@ sub run {
             }
         }
 
-        for my $package (sort keys %installable) {
+        # Get the l3 released binaries. Only installed binaries can conflict.
+        my @installable_l3 = grep { $bins{$_}->{supportstatus} eq 'l3' } keys %installable;
 
-            # check if we already skipped it
-            next unless defined $installable{$package};
-
-            # Remove binaries conflicting with the ones that are being tested.
-            my $conflict = has_conflict($package);
-            next unless $conflict;
-            if ($installable{$conflict}) {
-                record_info "CONFLICT!", "$package conflicts with $conflict. Skipping $conflict.";
-                delete $installable{$conflict};
-                @patch_l3 = grep !/$conflict/, @patch_l3;
-                @patch_l2 = grep !/$conflict/, @patch_l2;
-            } else {
-                record_info "CONFLICT!", "$package conflicts with $conflict. Removing $conflict.";
-                zypper_call("rm $conflict", exitcode => [0, 104]);
+        # If not all l3 released binaries are in the conflict binaries, fail.
+        print "\nInstallable L3: @installable_l3\n";
+        for my $package (@installable_l3) {
+            my $hit = first { $package eq $_ } @conflict_names;
+            unless ($hit) {
+                record_info "Error", "$package is l3 but does not exist in the patch. The update may have been misconfigured";
             }
         }
 
-        # Install released version of installable binaries.
+        for my $installable (keys %installable) {
+            push(@update_conflicts, $installable) if grep($installable eq $_, @conflicting_packages);
+        }
+
         # Make sure on SLE 15+ zyppper 1.14+ with '--force-resolution --solver-focus Update' patched binaries are installed
         my $solver_focus = $zypper_version >= 14 ? '--force-resolution --solver-focus Update ' : '';
-        if (scalar(keys %installable)) {
-            record_info 'Preinstall', 'Install affected packages before update repo is enabled';
-            zypper_call("in -l $solver_focus" . join(' ', keys %installable), exitcode => [0, 102, 103], log => "prepare_$patch.log", timeout => 1500);
+        if (@update_conflicts && $solver_focus) {
+            for my $single_package (keys %installable) {
+                next if grep($single_package eq $_, @blocked_packages);
+
+                # remove patched packages with multiple versions installed e.g. kernel-default
+                zypper_call('rm kernel-default', exitcode => [0, 104]) if $single_package =~ /kernel-default*/;
+
+                record_info 'Preinstall', "Install package $single_package with conflicts before update repo is enabled";
+                zypper_call("in -l $solver_focus $single_package", exitcode => [0, 102, 103], log => "prepare_${patch}_${single_package}.log", timeout => 1500);
+
+                # Store the version of the conflicting binary before update.
+                $patch_bins{$single_package}->{old} = get_installed_bin_version($single_package, 'old');
+
+                enable_test_repositories($repos_count);
+
+                # Patch installed binary one by one due to conflict or at least one binary
+                record_info 'Install patch', "Install patch $patch with installed package $single_package";
+                zypper_call("in -l $solver_focus -t patch $patch", exitcode => [0, 102, 103], log => "zypper_${patch}_${single_package}.log", timeout => 1500);
+
+                # Install binaries newly added by the incident.
+                if (scalar @new_binaries) {
+                    record_info 'Install new packages', "New packages: @new_binaries";
+                    zypper_call("in -l $solver_focus @new_binaries", exitcode => [0, 102, 103], log => "new_${patch}_${single_package}.log", timeout => 1500);
+                }
+
+                # Store the version of the conflicting binary after update
+                $patch_bins{$single_package}->{new} = get_installed_bin_version($single_package, 'new');
+
+                disable_test_repositories($repos_count);
+            }
+        }
+        else {
+            for my $package (sort keys %installable) {
+
+                # check if we already skipped it
+                next unless defined $installable{$package};
+
+                # Remove binaries conflicting with the ones that are being tested.
+                my $conflict = has_conflict($package);
+                next unless $conflict;
+                if ($installable{$conflict}) {
+                    record_info "CONFLICT!", "$package conflicts with $conflict. Skipping $conflict.";
+                    delete $installable{$conflict};
+                    @patch_l3 = grep !/$conflict/, @patch_l3;
+                    @patch_l2 = grep !/$conflict/, @patch_l2;
+                } else {
+                    record_info "CONFLICT!", "$package conflicts with $conflict. Removing $conflict.";
+                    zypper_call("rm $conflict", exitcode => [0, 104]);
+                }
+            }
+
+            foreach (@remove) {
+                record_info('Conflict', "Manually remove conflict $_");
+                zypper_call("rm $_", exitcode => [0, 104], timeout => 500);
+            }
+
+            if (scalar(keys %installable)) {
+                record_info 'Preinstall', 'Install affected packages before update repo is enabled';
+                zypper_call("in -l " . join(' ', keys %installable), exitcode => [0, 102, 103], log => "prepare_$patch.log", timeout => 1500);
+            }
+
+            # Store the version of the installed binaries before the update.
+            foreach (keys %patch_bins) {
+                $patch_bins{$_}->{old} = get_installed_bin_version($_, 'old');
+            }
+
+            enable_test_repositories($repos_count);
+
+            # Patch binaries already installed.
+            record_info 'Install patch', "Install patch $patch";
+            zypper_call("in -l $solver_focus -t patch $patch", exitcode => [0, 102, 103], log => "zypper_$patch.log", timeout => 1500);
+
+            # Install binaries newly added by the incident.
+            if (scalar @new_binaries) {
+                zypper_call("rm @conflicting_packages_sle12", exitcode => [0, 103, 104]) if is_sle('<15');
+                record_info 'Install new packages', "New packages: @new_binaries";
+                zypper_call("in -l @new_binaries", exitcode => [0, 102, 103], log => "new_$patch.log", timeout => 1500);
+            }
+
+            # After the patches have been applied and the new binaries have been
+            # installed, check the version again and based on that determine if the
+            # update was succesfull.
+            foreach (keys %patch_bins) {
+                $patch_bins{$_}->{new} = get_installed_bin_version($_, 'new');
+            }
+
+            disable_test_repositories($repos_count);
         }
 
-        # Store the version of the installed binaries before the update.
-        foreach (keys %patch_bins) {
-            $patch_bins{$_}->{old} = get_installed_bin_version($_, 'old');
-        }
-
-        enable_test_repositories($repos_count);
-
-        # Patch binaries already installed.
-        record_info 'Install patch', "Install patch $patch";
-        zypper_call("in -l -t patch $patch", exitcode => [0, 102, 103], log => "zypper_$patch.log", timeout => 2000);
-
-        # Install binaries newly added by the incident.
-        if (scalar @new_binaries) {
-            record_info 'Install new packages', "New packages: @new_binaries";
-            zypper_call("in -l $solver_focus @new_binaries", exitcode => [0, 102, 103], log => "new_$patch.log", timeout => 1500);
-        }
-
-        # After the patches have been applied and the new binaries have been
-        # installed, check the version again and based on that determine if the
-        # update was succesfull.
-        foreach (keys %patch_bins) {
-            $patch_bins{$_}->{new} = get_installed_bin_version($_, 'new');
-        }
         my $l3_results = "L3 binaries must always be updated.\n";
         foreach (@l3) {
             if ($patch_bins{$_}->{old} eq $patch_bins{$_}->{new} or not $patch_bins{$_}->{new}) {
@@ -276,8 +352,10 @@ sub run {
         record_soft_failure 'poo#67357 Some L3 binaries were not updated.' if scalar(grep { !$patch_bins{$_}->{update_status} } @patch_l3);
         record_soft_failure 'poo#67357 Some L2 binaries were not installed.' if scalar(grep { !$patch_bins{$_}->{update_status} } @patch_l2);
 
-        disable_test_repositories($repos_count);
         record_info 'Uninstall patch', "Uninstall patch $patch";
+        foreach (@remove) {
+            zypper_call("rm $_", exitcode => [0, 104], timeout => 500);
+        }
         # update repos are disabled, zypper dup will downgrade packages from patch
         zypper_call('dup -l', exitcode => [0, 8]);
         # remove patched packages with multiple versions installed e.g. kernel-source
