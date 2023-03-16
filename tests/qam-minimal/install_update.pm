@@ -80,6 +80,13 @@ sub run {
 
         capture_state('between', 1);
 
+        # old kernel does not have key of new kernel
+        if (check_var('MACHINE', 'uefi') && script_run('zypper se '. join(' ', map { "-r $_" } split(',', $repo)) .' kernel') == 0) {
+            power_action('reboot', textmode => 1);
+            $self->wait_boot(bootloader_time => get_var('BOOTLOADER_TIMEOUT', 200));
+            select_serial_terminal;
+        }
+
         # check if latest kernel has valid secure boot signature
         if (check_var('MACHINE', 'uefi') && is_sle('12-sp1+')) {
             assert_script_run 'kexec -l -s /boot/vmlinuz --initrd=/boot/initrd --reuse-cmdline';
