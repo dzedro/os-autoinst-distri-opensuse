@@ -61,26 +61,6 @@ sub run {
     my $patches = '';
     $patches = get_patches($incident_id, $repo) if $incident_id;
 
-    # test if is patch needed and record_info
-    # record softfail on QAM_MINIMAL=small tests, or record info on others
-    # if isn't patch neded, zypper call with install makes no sense
-    if ((is_patch_needed($patch) && $patch) || ($incident_id && !($patches))) {
-        if (check_var('QAM_MINIMAL', 'small')) {
-            record_soft_failure("Patch isn't needed on minimal installation poo#17412");
-        }
-        else {
-            record_info('Not needed', q{Patch doesn't fix any package in minimal pattern});
-        }
-    }
-    else {
-        # Use single patch or patch list
-        $patch = $patch ? $patch : $patches;
-        zypper_call("in -l -t patch ${patch}", exitcode => [0, 102, 103], log => 'zypper.log');
-
-        save_screenshot;
-
-        capture_state('between', 1);
-
         # old kernel does not have key of new kernel
         if (check_var('MACHINE', 'uefi') && script_run('zypper se '. join(' ', map { "-r $_" } split(',', $repo)) .' kernel') == 0) {
             power_action('reboot', textmode => 1);
@@ -109,7 +89,6 @@ sub run {
         power_action('reboot', textmode => 1);
         $self->wait_boot(bootloader_time => get_var('BOOTLOADER_TIMEOUT', 200));
         select_serial_terminal;
-    }
 }
 
 sub test_flags {
