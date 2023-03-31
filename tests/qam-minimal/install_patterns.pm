@@ -25,6 +25,7 @@ use version_utils 'is_sle';
 use testapi;
 use serial_terminal qw(select_serial_terminal);
 use power_action_utils qw(power_action);
+use Utils::Architectures 'is_s390x';
 
 sub install_packages {
     my $patch_info = shift;
@@ -67,6 +68,8 @@ sub run {
     $patch = $patch ? $patch : $patches;
     my $patch_status = is_patch_needed($patch, 1);
     install_packages($patch_status) if $patch_status;
+
+    systemctl 'restart display-manager' if is_s390x && is_sle('=15-SP2');
 
     power_action('reboot', textmode => 1);
     $self->wait_boot(bootloader_time => get_var('BOOTLOADER_TIMEOUT', 200));
