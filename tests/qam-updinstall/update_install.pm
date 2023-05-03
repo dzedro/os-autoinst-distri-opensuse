@@ -353,7 +353,7 @@ sub run {
             zypper_call("rm $_", exitcode => [0, 104], timeout => 500);
         }
         # update repos are disabled, zypper dup will downgrade packages from patch
-        zypper_call('dup -l', exitcode => [0, 8]);
+        zypper_call('dup --replacefiles -l', exitcode => [0, 8]);
         # remove patched packages with multiple versions installed e.g. kernel-source
         foreach (@patch_l3, @patch_l2) {
             zypper_call("rm $_-\$(zypper se -si $_|awk 'END{print\$7}')", exitcode => [0, 104]) if script_output("rpm -q $_|wc -l", proceed_on_failure => 1) >= 2;
