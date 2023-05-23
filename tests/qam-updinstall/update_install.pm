@@ -247,7 +247,7 @@ sub run {
                 zypper_call('rm kernel-default', exitcode => [0, 104]) if $single_package =~ /kernel-default*/;
 
                 record_info 'Preinstall', "Install package $single_package with conflicts before update repo is enabled";
-                zypper_call("in -l $solver_focus $single_package", exitcode => [0, 102, 103], log => "prepare_${patch}_${single_package}.log", timeout => 1500);
+                zypper_call("in -l $solver_focus $single_package", exitcode => [0, 102, 103, 107], log => "prepare_${patch}_${single_package}.log", timeout => 1500);
 
                 # Store the version of the conflicting binary before update.
                 $patch_bins{$single_package}->{old} = get_installed_bin_version($single_package, 'old');
@@ -357,7 +357,7 @@ sub run {
             zypper_call("rm $_", exitcode => [0, 104], timeout => 500);
         }
         # update repos are disabled, zypper dup will downgrade packages from patch
-        zypper_call('dup --replacefiles -l', exitcode => [0, 8]);
+        zypper_call('dup --replacefiles -l', exitcode => [0, 8, 107]);
         # remove patched packages with multiple versions installed e.g. kernel-source
         foreach (@patch_l3, @patch_l2) {
             zypper_call("rm $_-\$(zypper se -si $_|awk 'END{print\$7}')", exitcode => [0, 104]) if script_output("rpm -q $_|wc -l", proceed_on_failure => 1) >= 2;
