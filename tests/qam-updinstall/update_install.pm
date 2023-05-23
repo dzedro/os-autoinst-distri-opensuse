@@ -315,7 +315,7 @@ sub run {
             if (scalar @new_binaries) {
                 zypper_call("rm @conflicting_packages_sle12", exitcode => [0, 103, 104]) if is_sle('<15');
                 record_info 'Install new packages', "New packages: @new_binaries";
-                zypper_call("in -l @new_binaries", exitcode => [0, 102, 103], log => "new_$patch.log", timeout => 1500);
+                zypper_call("in -l @new_binaries", exitcode => [0, 102, 103, 104], log => "new_$patch.log", timeout => 1500);
             }
 
             # After the patches have been applied and the new binaries have been
