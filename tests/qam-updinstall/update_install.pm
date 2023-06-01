@@ -91,9 +91,10 @@ my @conflicting_packages = (
     'SAPHanaSR-ScaleOut-doc', 'SAPHanaSR-doc',
     'dapl-devel', 'dapl-debug-devel', 'dapl', 'dapl-debug',
     'libdat2-2', 'dapl-debug-libs',
-    'libjpeg8-devel', 'libjpeg62-devel'
+    'libjpeg8-devel', 'libjpeg62-devel',
+    'openssh8.4-fips'
 );
-my @conflicting_packages_sle12 = ('apache2-utils', 'apache2-worker', 'apache2-prefork', 'apache2-example-pages', 'apache2-doc');
+my @conflicting_packages_sle12 = ('apache2-utils', 'apache2-worker', 'apache2-prefork', 'apache2-example-pages', 'apache2-doc', 'openssh');
 
 # rpm-ndb can't be installed, it will remove rpm and break rpmdb2solv -> zypper
 my @blocked_packages = ('rpm-ndb', 'kernel-default-base');
@@ -313,9 +314,15 @@ sub run {
 
             # Install binaries newly added by the incident.
             if (scalar @new_binaries) {
-                zypper_call("rm @conflicting_packages_sle12", exitcode => [0, 103, 104]) if is_sle('<15');
-                record_info 'Install new packages', "New packages: @new_binaries";
-                zypper_call("in -l @new_binaries", exitcode => [0, 102, 103, 104], log => "new_$patch.log", timeout => 1500);
+                #zypper_call("rm @conflicting_packages_sle12", exitcode => [0, 103, 104]) if is_sle('<15');
+                #record_info 'Install new packages', "New packages: @new_binaries";
+                #zypper_call("in -l @new_binaries", exitcode => [0, 102, 103, 104], log => "new_$patch.log", timeout => 1500);
+                foreach (@new_binaries) {
+                    zypper_call("rm @conflicting_packages_sle12", exitcode => [0, 103, 104]) if is_sle('<15');
+                    record_info 'Install new package', "New package: $_";
+                    zypper_call("in $_");
+                    zypper_call("rm $_");
+                }
             }
 
             # After the patches have been applied and the new binaries have been
