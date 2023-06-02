@@ -153,6 +153,7 @@ sub run {
         next if s{http.*SUSE_Updates_(.*)/?}{$1};
         die 'Modules regex failed. Modules could not be extracted from repos variable.';
     }
+    record_info('Modules', "@modules");
 
     # Patch the SUT to a released state;
     fully_patch_system;
@@ -164,10 +165,13 @@ sub run {
 
     # Get packages affected by the incident.
     my @packages = get_incident_packages($incident_id);
+    record_info('Packages', "@packages");
 
     # Get binaries that are in each package across the modules that are in the repos.
     foreach (@packages) {
         %bins = (%bins, get_packagebins_in_modules({package_name => $_, modules => \@modules}));
+        # hash of hashes with the keys 'name', 'supportstatus' and 'package'.
+        record_info('Binaries', Dumper(\%bins));
     }
     die "Parsing binaries from SMELT data failed" if not keys %bins;
 
