@@ -324,7 +324,7 @@ sub run {
                 foreach (@new_binaries) {
                     zypper_call("rm @conflicting_packages_sle12", exitcode => [0, 103, 104]) if is_sle('<15');
                     record_info 'Install new package', "New package: $_";
-                    zypper_call("in $_");
+                    zypper_call("in $solver_focus $_");
                     zypper_call("rm $_");
                 }
             }
