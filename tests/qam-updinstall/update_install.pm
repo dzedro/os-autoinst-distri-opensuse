@@ -386,7 +386,7 @@ sub run {
 
     prepare_system_shutdown;
     power_action("reboot");
-    $self->wait_boot(bootloader_time => 200);
+    $self->wait_boot(bootloader_time => 400);
 }
 
 sub test_flags {
