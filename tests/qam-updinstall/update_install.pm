@@ -92,7 +92,6 @@ my @conflicting_packages = (
     'dapl-devel', 'dapl-debug-devel', 'dapl', 'dapl-debug',
     'libdat2-2', 'dapl-debug-libs',
     'libjpeg8-devel', 'libjpeg62-devel',
-    'openssh8.4-fips'
 );
 my @conflicting_packages_sle12 = ('apache2-utils', 'apache2-worker', 'apache2-prefork', 'apache2-example-pages', 'apache2-doc', 'openssh');
 
@@ -244,7 +243,7 @@ sub run {
 
         # Make sure on SLE 15+ zyppper 1.14+ with '--force-resolution --solver-focus Update' patched binaries are installed
         my $solver_focus = $zypper_version >= 14 ? '--force-resolution --solver-focus Update ' : '';
-        if (@update_conflicts && $solver_focus) {
+        if ($solver_focus) {
             for my $single_package (keys %installable) {
                 next if grep($single_package eq $_, @blocked_packages);
 
@@ -295,9 +294,11 @@ sub run {
                 }
             }
 
-            foreach (@remove) {
-                record_info('Conflict', "Manually remove conflict $_");
-                zypper_call("rm $_", exitcode => [0, 104], timeout => 500);
+            if (@remove) {
+                foreach (@remove) {
+                    record_info('Conflict', "Manually remove conflict $_");
+                    zypper_call("rm $_", exitcode => [0, 104], timeout => 500);
+                }
             }
 
             if (scalar(keys %installable)) {
