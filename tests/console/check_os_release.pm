@@ -21,6 +21,9 @@ sub run {
     my ($self) = @_;
     select_serial_terminal;
 
+    assert_script_run 'free -m';
+    assert_script_run 'cat /proc/cmdline';
+
     my %checker = ();
     $checker{VERSION} = get_var("TARGET_VERSION", get_required_var("VERSION"));
     $checker{VERSION_ID} = $checker{VERSION};

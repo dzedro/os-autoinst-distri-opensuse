@@ -7,36 +7,8 @@ schedule:
   - console/prepare_test_data
   - console/consoletest_setup
   - console/check_os_release
-  - console/ping
-  - console/openvswitch
-  - console/pam
-  - console/sshd
-  - console/update_alternatives
-  - console/rpm
-  - console/slp
-  - console/journalctl
-  - console/journalctlLevels
-  - console/libvorbis
-  - console/krb5
-  - console/command_not_found
-  - console/openssl_alpn
-  - console/autoyast_removed
-  - console/cron
-  - console/syslog
-  - console/mta
-  - console/check_default_network_manager
-  - console/git
-  - console/cups
-  - console/java
-  - console/sqlite3
-  - console/gdb
-  - console/perf
-  - console/sysctl
-  - console/sysstat
-  - console/cpio
-  - console/tar
-  - '{{version_specific}}'
-  - console/coredump_collect
+  - sles4sap/sys_param_check.pm
+  - console/check_os_release
 conditional_schedule:
   version_specific:
     VERSION:
