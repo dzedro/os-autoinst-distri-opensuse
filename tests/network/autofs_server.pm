@@ -74,6 +74,7 @@ sub run {
     assert_script_run "cat /etc/exports";
     systemctl 'restart nfs-server';
     barrier_wait 'AUTOFS_SUITE_READY';
+    systemctl 'status nfs-server';
     barrier_wait 'AUTOFS_FINISHED';
 }
 1;
