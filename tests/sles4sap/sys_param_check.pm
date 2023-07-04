@@ -48,7 +48,7 @@ sub run {
     my $robot_fw_version = '3.2.2';
     my $distro_ver = is_sle ? "sles-" . get_var('VERSION') : 'Tumbleweed';
     my $test_repo = "/robot/tests/$distro_ver";
-    my $testkit = get_var('SYS_PARAM_CHECK_TEST', 'https://github.com/openSUSE/sys-param-check');
+    my $testkit = get_var('SYS_PARAM_CHECK_TEST', 'https://github.com/dzedro/sys-param-check');
     my $python_bin = is_sle('<15') ? 'python' : 'python3';
     select_serial_terminal;
 
@@ -57,7 +57,7 @@ sub run {
 
     # Download and prepare the test environment
     zypper_call 'in git-core';
-    script_retry "git clone $testkit /robot";
+    script_retry "git clone -b tw $testkit /robot";
 
     # Install the robot framework
     assert_script_run "unzip /robot/bin/robotframework-$robot_fw_version.zip";
