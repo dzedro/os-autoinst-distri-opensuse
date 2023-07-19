@@ -65,12 +65,7 @@ sub select_master_password_option {
 
     firefox_preferences;
     # Search "Passwords" section
-    if ($ff_ver >= 91) {
-        type_string "Use a primary", timeout => 15, max_interval => 40;
-    }
-    else {
-        type_string "Use a master", timeout => 15, max_interval => 40;
-    }
+    type_string "Use a primary", timeout => 15, max_interval => 40;
     assert_and_click("firefox-master-password-checkbox");
     assert_screen("firefox-passwd-master_setting");
 }
