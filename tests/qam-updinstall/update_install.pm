@@ -244,37 +244,6 @@ sub run {
         # Make sure on SLE 15+ zyppper 1.14+ with '--force-resolution --solver-focus Update' patched binaries are installed
         my $solver_focus = $zypper_version >= 14 ? '--force-resolution --solver-focus Update ' : '';
         if ($solver_focus) {
-            for my $single_package (keys %installable) {
-                next if grep($single_package eq $_, @blocked_packages);
-
-                # remove patched packages with multiple versions installed e.g. kernel-default
-                zypper_call('rm kernel-default', exitcode => [0, 104]) if $single_package =~ /kernel-default*/;
-
-                record_info 'Preinstall', "Install package $single_package with conflicts before update repo is enabled";
-                zypper_call("in -l $solver_focus $single_package", exitcode => [0, 102, 103, 107], log => "prepare_${patch}_${single_package}.log", timeout => 1500);
-
-                # Store the version of the conflicting binary before update.
-                $patch_bins{$single_package}->{old} = get_installed_bin_version($single_package, 'old');
-
-                enable_test_repositories($repos_count);
-
-                # Patch installed binary one by one due to conflict or at least one binary
-                record_info 'Install patch', "Install patch $patch with installed package $single_package";
-                zypper_call("in -l $solver_focus -t patch $patch", exitcode => [0, 102, 103], log => "zypper_${patch}_${single_package}.log", timeout => 1500);
-
-                # Install binaries newly added by the incident.
-                if (scalar @new_binaries) {
-                    record_info 'Install new packages', "New packages: @new_binaries";
-                    zypper_call("in -l $solver_focus @new_binaries", exitcode => [0, 102, 103], log => "new_${patch}_${single_package}.log", timeout => 1500);
-                }
-
-                # Store the version of the conflicting binary after update
-                $patch_bins{$single_package}->{new} = get_installed_bin_version($single_package, 'new');
-
-                disable_test_repositories($repos_count);
-            }
-        }
-        else {
             for my $package (sort keys %installable) {
 
                 # check if we already skipped it
