@@ -98,7 +98,7 @@ sub tb_setup_account {
     if ($new_gui) {
         # If use multimachine, select correct needles to configure thunderbird.
         if ($hostname eq 'client') {
-            send_key 'end';    # go to the bottom to see whole manual configuration
+            send_key 'pgup';
             if (check_screen 'thunderbird_in-hostname-start-with-dot', 3) {
                 record_info 'bsc#1191866';
                 # have to edit both hostnames
@@ -118,7 +118,8 @@ sub tb_setup_account {
             send_key_until_needlematch 'thunderbird_wizard-done', 'tab', 16, 1;
             assert_and_click 'thunderbird_wizard-done';
             wait_still_screen(2, 4);
-            assert_and_click 'thunderbird_SSL_done_config' unless check_screen('thunderbird_confirm_security_exception');
+            assert_and_click 'thunderbird_I-understand-the-risks';
+            assert_and_click 'thunderbird_I-understand-the-risks-confirm';
             my $count = 1;
             while (1) {
                 die 'Repeating on security_exception too much' if $count++ == 5;
@@ -152,11 +153,12 @@ sub tb_setup_account {
             send_key 'end';    # go to the bottom to see whole button and checkbox
             wait_still_screen(2);
             assert_and_click 'thunderbird_I-understand-the-risks';
-            assert_and_click 'thunderbird_risks-done';
+            assert_and_click 'thunderbird_I-understand-the-risks-confirm';
             wait_still_screen(2);
             assert_and_click 'thunderbird_finish';
             # skip additional integrations
             assert_and_click "thunderbird_skip-system-integration" if check_screen 'thunderbird_skip-system-integration', 10;
+            assert_and_click "thunderbird_select-inbox";
             assert_and_click "thunderbird_get-messages";
         }
     }
@@ -217,27 +219,7 @@ sub tb_send_message {
     send_key "tab";
     type_string "Test email send and receive.";
     assert_and_click "thunderbird_send-message";
-    wait_still_screen(2, 4);
-
-    if ($hostname eq 'client') {
-        while (1) {
-            my @tags = qw(thunderbird_attachment_reminder thunderbird_SSL_error_security_exception thunderbird_confirm_security_exception thunderbird_maximized_send-message thunderbird_cancel thunderbird_get-messages);
-            wait_still_screen(2, 4);
-            assert_screen(\@tags);
-            click_lastmatch;
-            wait_still_screen(2, 4);
-            last if match_has_tag('thunderbird_get-messages');
-        }
-    }
-    else {
-        while (1) {
-            wait_still_screen(5, 10);
-            assert_screen [qw(thunderbird_sent-folder-appeared thunderbird_cancel)];
-            click_lastmatch if match_has_tag('thunderbird_cancel');
-            last if match_has_tag('thunderbird_sent-folder-appeared');
-        }
-    }
-
+    assert_screen 'thunderbird_sent-folder-appeared', 90;
     return $mail_subject;
 }
 
