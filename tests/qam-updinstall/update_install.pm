@@ -142,6 +142,8 @@ sub run {
 
     zypper_call(q{mr -d $(zypper lr | awk -F '|' '/NVIDIA/ {print $2}')}, exitcode => [0, 3]);
     zypper_call("ar -f http://dist.suse.de/ibs/SUSE/Updates/SLE-Live-Patching/12-SP3/" . get_var('ARCH') . "/update/ sle-module-live-patching:12-SP3::update") if is_sle('=12-SP3');
+    zypper_call("ar -f http://dist.suse.de/ibs/SUSE/Products/SLE-HA/12-SP5/" . get_var('ARCH') . "/product/ sle-ha:12-SP5::pool") if is_sle('=12-SP5');
+    zypper_call("ar -f http://dist.suse.de/ibs/SUSE/Updates/SLE-HA/12-SP5/" . get_var('ARCH') . "/update/ sle-ha:12-SP5::update") if is_sle('=12-SP5');
 
     # Extract module name from repo url.
     my @modules = split(/,/, $repos);
