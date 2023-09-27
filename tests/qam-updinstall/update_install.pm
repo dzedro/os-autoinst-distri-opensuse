@@ -92,6 +92,7 @@ my @conflicting_packages = (
     'dapl-devel', 'dapl-debug-devel', 'dapl', 'dapl-debug',
     'libdat2-2', 'dapl-debug-libs',
     'libjpeg8-devel', 'libjpeg62-devel',
+    'postfix-bdb'
 );
 my @conflicting_packages_sle12 = ('apache2-utils', 'apache2-worker', 'apache2-prefork', 'apache2-example-pages', 'apache2-doc', 'openssh');
 
