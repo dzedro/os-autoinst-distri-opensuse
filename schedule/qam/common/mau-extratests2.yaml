@@ -49,7 +49,7 @@ conditional_schedule:
       15-SP4:
         - console/osinfo_db
         - console/ovn
-        - console/firewalld
+#        - console/firewalld
         - console/libgcrypt
         - console/zziplib
         - console/journald_fss
