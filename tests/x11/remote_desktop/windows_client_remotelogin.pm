@@ -30,7 +30,7 @@ sub run {
     assert_screen "verify-identity", 90;
     send_key 'y';
 
-    assert_screen "xrdp-login-screen";
+    assert_screen "xrdp-login-screen", 90;
     type_string $username;    # input account name
     send_key "tab";
     type_password;
