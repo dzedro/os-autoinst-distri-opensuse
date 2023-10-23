@@ -43,7 +43,7 @@ sub run {
     add_suseconnect_product(is_sle('<15') ? 'sle-live-patching' : 'sle-module-live-patching', undef, undef, "-r $live_reg_code");
 
     assert_script_run "SUSEConnect --status";
-    assert_script_run "SUSEConnect -d || SUSEConnect --cleanup";
+    assert_script_run "SUSEConnect -d";
     assert_script_run "SUSEConnect --status-text";
 
 }
