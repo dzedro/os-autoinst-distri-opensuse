@@ -273,7 +273,7 @@ sub run {
 
             if (scalar(keys %installable)) {
                 record_info 'Preinstall', 'Install affected packages before update repo is enabled';
-                zypper_call("in -l " . join(' ', keys %installable), exitcode => [0, 102, 103], log => "prepare_$patch.log", timeout => 1500);
+                zypper_call("in -l $solver_focus " . join(' ', keys %installable), exitcode => [0, 102, 103], log => "prepare_$patch.log", timeout => 1500);
             }
 
             # Store the version of the installed binaries before the update.
@@ -339,7 +339,7 @@ sub run {
             zypper_call("rm $_", exitcode => [0, 104], timeout => 500);
         }
         # update repos are disabled, zypper dup will downgrade packages from patch
-        zypper_call('dup --replacefiles -l', exitcode => [0, 8, 107]);
+        zypper_call("dup --replacefiles $solver_focus -l", exitcode => [0, 8, 107]);
         # remove patched packages with multiple versions installed e.g. kernel-source
         foreach (@patch_l3, @patch_l2) {
             zypper_call("rm $_-\$(zypper se -si $_|awk 'END{print\$7}')", exitcode => [0, 104]) if script_output("rpm -q $_|wc -l", proceed_on_failure => 1) >= 2;
