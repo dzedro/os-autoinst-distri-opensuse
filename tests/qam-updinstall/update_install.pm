@@ -194,6 +194,8 @@ sub run {
 
         disable_test_repositories($repos_count);
 
+        zypper_call("in -l postgresql12 postgresql13", exitcode => [0, 102, 103]);
+
         foreach my $b (@patch_l2, @patch_l3) {
             if (zypper_call("se -t package -x $b", exitcode => [0, 104]) eq '104') {
                 push(@new_binaries, $b);
