@@ -155,6 +155,17 @@ sub run {
     }
     record_info('Modules', "@modules");
 
+    if (get_var('INCIDENT_DEP')) {
+        my @repos = split(/,/, get_var('INCIDENT_DEP', ''));
+
+        for my $repo (@repos) {
+            my @repo_part = split(/;/, $repo);
+            my $url = $repo_part[1];
+            my $name = $repo_part[0];
+            qam::add_repo_if_not_present($url, $name);
+        }
+    }
+
     # Patch the SUT to a released state;
     fully_patch_system;
 
