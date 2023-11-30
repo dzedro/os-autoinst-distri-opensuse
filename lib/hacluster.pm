@@ -618,7 +618,7 @@ sub ha_export_logs {
     upload_logs($mdadm_conf, failok => 1);
 
     # supportconfig
-    script_run "supportconfig -g -B $clustername", 300;
+    script_run "supportconfig -g -B $clustername", 1200;
     upload_logs("/var/log/scc_$clustername.tgz", failok => 1);
 
     # pacemaker cts log
