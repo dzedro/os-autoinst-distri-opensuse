@@ -18,6 +18,7 @@ use power_action_utils qw(power_action);
 # Update with Plasma applet for software updates using PackageKit
 sub run {
     my ($self) = @_;
+    zypper_call('up');
     select_console 'x11', await_console => 0;
     ensure_unlocked_desktop;
     turn_off_kde_screensaver;
