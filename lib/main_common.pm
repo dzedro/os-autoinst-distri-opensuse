@@ -242,10 +242,6 @@ sub is_gnome_live {
     return get_var('FLAVOR', '') =~ /GNOME-Live/;
 }
 
-sub is_kde_live {
-    return get_var('FLAVOR', '') =~ /KDE-Live/;
-}
-
 sub packagekit_available {
     return !check_var('FLAVOR', 'Rescue-CD');
 }

@@ -9,7 +9,7 @@ use Exporter;
 use strict;
 use warnings;
 use testapi;
-use version_utils qw(is_sle is_leap is_plasma6);
+use version_utils qw(is_sle is_leap is_plasma6 is_kde_live);
 use utils 'assert_and_click_until_screen_change';
 use Utils::Architectures;
 use Utils::Backends qw(is_pvm is_qemu);
@@ -76,7 +76,7 @@ sub ensure_unlocked_desktop {
     # press key to update screen, wait shortly before and after to not match cached screen
     my $wait_time = get_var('UPGRADE') ? 10 : 3;
     wait_still_screen($wait_time, timeout => 15);
-    send_key 'ctrl';
+    send_key 'ctrl' unless is_kde_live;
     wait_still_screen($wait_time, timeout => 15);
     while ($counter--) {
         my @tags = qw(displaymanager displaymanager-password-prompt generic-desktop screenlock screenlock-password authentication-required-user-settings authentication-required-modify-system guest-disabled-display oh-no-something-has-gone-wrong);

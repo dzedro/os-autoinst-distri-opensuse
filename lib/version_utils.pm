@@ -31,6 +31,7 @@ use constant {
           is_leap
           is_opensuse
           is_tumbleweed
+          is_kde_live
           is_rescuesystem
           is_sles4sap
           is_sles4sap_standard
@@ -373,6 +374,15 @@ sub is_sle {
 
     # Version check
     return check_version($query, $version, qr/\d{2}(?:-sp\d)?/);
+}
+
+=head2 is_kde_live
+
+Returns true if called on KDE-Live flavor
+=cut
+
+sub is_kde_live {
+    return get_var('FLAVOR', '') =~ /KDE-Live/;
 }
 
 =head2 is_transactional
