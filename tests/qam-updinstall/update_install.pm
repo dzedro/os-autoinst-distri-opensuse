@@ -27,11 +27,10 @@ use maintenance_smelt qw(get_packagebins_in_modules get_incident_packages);
 use testapi;
 use serial_terminal 'select_serial_terminal';
 use version_utils qw(is_sle);
-use Data::Dumper;
+use Data::Dumper qw(Dumper);
 
 my @conflicting_packages = (
     'cloud-netconfig-ec2', 'cloud-netconfig-gce', 'cloud-netconfig-azure',
-    'kernel-default-base', 'kernel-default-extra'
 );
 
 my @conflicting_packages_sle12 = ('apache2-prefork', 'apache2-doc', 'apache2-example-pages', 'apache2-utils', 'apache2-worker',
@@ -190,8 +189,12 @@ sub run {
         }
 
         # separate binaries from this one patch based on patch info
-        for my $b (@l2) { push(@patch_l2, $b) if grep($b eq $_, @conflict_names); }
-        for my $b (@l3) { push(@patch_l3, $b) if grep($b eq $_, @conflict_names); }
+        for my $b (@l2) { push(@patch_l2, $b) if grep($b eq $_, @conflict_names) && grep($b ne $_,@blocked_packages); }
+        for my $b (@l3) { push(@patch_l3, $b) if grep($b eq $_, @conflict_names) && grep($b ne $_,@blocked_packages); }
+#        foreach (@blocked_packages) {
+#            @patch_l3 = grep /$_/, @patch_l3;
+#            @patch_l2 = grep /$_/, @patch_l2;
+#        }
         for my $b (@unsupported) { push(@patch_unsupported, $b) if grep($b eq $_, @conflict_names); }
         %patch_bins = map { $_ => ${bins}{$_} } (@patch_l2, @patch_l3);
 
@@ -201,6 +204,7 @@ sub run {
             if (zypper_call("se -t package -x $b", exitcode => [0, 104]) eq '104') {
                 push(@new_binaries, $b);
             } else {
+#                $installable{$b} = 1 unless grep($b eq $_, @blocked_packages);
                 $installable{$b} = 1;
             }
         }
@@ -208,7 +212,7 @@ sub run {
         for my $pkg (keys %installable) {
             my @conflicts = is_sle('<=12-SP5') ? @conflicting_packages_sle12 : @conflicting_packages;
             if (grep($pkg eq $_, @conflicts)) {
-                push(@update_conflicts, $pkg) unless grep($pkg eq $_, @blocked_packages);
+                push(@update_conflicts, $pkg);
                 delete($installable{$pkg});
             }
         }
