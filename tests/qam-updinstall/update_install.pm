@@ -27,11 +27,15 @@ use maintenance_smelt qw(get_packagebins_in_modules get_incident_packages);
 use testapi;
 use serial_terminal 'select_serial_terminal';
 use version_utils qw(is_sle);
+use Utils::Architectures qw(is_aarch64);
 use Data::Dumper qw(Dumper);
 
 my @conflicting_packages = (
     'cloud-netconfig-ec2', 'cloud-netconfig-gce', 'cloud-netconfig-azure',
+    'postfix', 'postfix-bdb', 'postfix-bdb-lmdb', 'postfix-ldap', 'postfix-mysql', 'postfix-devel'
 );
+
+push(@conflicting_packages, ('dpdk22-thunderx', 'dpdk22-thunderx-devel', 'dpdk22-thunderx-kmp-default')) if is_aarch64;
 
 my @conflicting_packages_sle12 = ('apache2-prefork', 'apache2-doc', 'apache2-example-pages', 'apache2-utils', 'apache2-worker',
     'apache2-tls13', 'apache2-tls13-doc', 'apache2-tls13-example-pages', 'apache2-tls13-prefork', 'apache2-tls13-worker',
@@ -188,9 +192,19 @@ sub run {
             }
         }
 
+        # there can be clonflict which can not be auto resolved on zypper ver < 14
+        # like libstdc++6-devel-gcc10 conflcits with never libstdc++6-pp-12.2.1
+#        my @remove = split(/,/, get_var('REMOVE_PREINSTALL_CONFLICTS', 0));
+#        if (@remove) {
+#            foreach (@remove) {
+#                record_info('Conflict', "Manually remove conflict $_");
+#                zypper_call("rm $_", exitcode => [0, 104], timeout => 500);
+#            }
+#        }
+
         # separate binaries from this one patch based on patch info
-        for my $b (@l2) { push(@patch_l2, $b) if grep($b eq $_, @conflict_names) && grep($b ne $_,@blocked_packages); }
-        for my $b (@l3) { push(@patch_l3, $b) if grep($b eq $_, @conflict_names) && grep($b ne $_,@blocked_packages); }
+        for my $b (@l2) { push(@patch_l2, $b) if grep($b eq $_, @conflict_names) && grep($b ne $_, @blocked_packages); }
+        for my $b (@l3) { push(@patch_l3, $b) if grep($b eq $_, @conflict_names) && grep($b ne $_, @blocked_packages); }
 #        foreach (@blocked_packages) {
 #            @patch_l3 = grep /$_/, @patch_l3;
 #            @patch_l2 = grep /$_/, @patch_l2;
@@ -204,8 +218,8 @@ sub run {
             if (zypper_call("se -t package -x $b", exitcode => [0, 104]) eq '104') {
                 push(@new_binaries, $b);
             } else {
-#                $installable{$b} = 1 unless grep($b eq $_, @blocked_packages);
-                $installable{$b} = 1;
+                $installable{$b} = 1 unless grep($b eq $_, @blocked_packages);
+#                $installable{$b} = 1;
             }
         }
 
@@ -255,6 +269,9 @@ sub run {
                 }
                 else {
                     sle12_zypp_resolve('zypper -v dup -l --replacefiles');
+                }
+                foreach (@update_conflicts) {
+                    zypper_call("rm $_", exitcode => [0, 104]);
                 }
                 # remove patched packages with multiple versions installed e.g. kernel-source
                 foreach (@patch_l3, @patch_l2) {
