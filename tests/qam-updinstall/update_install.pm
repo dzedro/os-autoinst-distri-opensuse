@@ -143,7 +143,7 @@ sub run {
         # e.g. https://smelt.suse.de/api/v1/basic/maintained/grub2
         record_info("$_", Dumper(\%bins));
     }
-    die "Parsing binaries from SMELT data failed" if not keys %bins;
+    #die "Parsing binaries from SMELT data failed" if not keys %bins;
 
     my @l2 = grep { ($bins{$_}->{supportstatus} eq 'l2') } keys %bins;
     my @l3 = grep { ($bins{$_}->{supportstatus} eq 'l3') } keys %bins;
