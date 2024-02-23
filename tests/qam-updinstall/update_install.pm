@@ -143,6 +143,8 @@ sub run {
 
     select_serial_terminal;
 
+    script_output('systemctl status sshd.service');
+
     my $zypper_version = script_output(q(rpm -q zypper|awk -F. '{print$2}'));
 
     zypper_call(q{mr -d $(zypper lr | awk -F '|' '/NVIDIA/ {print $2}')}, exitcode => [0, 3]);
@@ -423,6 +425,8 @@ sub run {
         assert_script_run("cat /tmp/$_* > /tmp/$_.log");
         upload_logs("/tmp/$_.log");
     }
+
+    script_output('systemctl status sshd.service');
 
     prepare_system_shutdown;
     power_action("reboot");
