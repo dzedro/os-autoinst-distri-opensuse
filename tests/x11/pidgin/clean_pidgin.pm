@@ -21,7 +21,7 @@ sub remove_pkg {
 
     # Remove packages
     assert_script_sudo "zypper -n rm @packages", 180;
-    assert_script_run "zypper --no-refresh if @packages|grep 'not installed'";
+    assert_script_sudo "zypper --no-refresh if @packages|grep 'not installed'";
     enter_cmd "exit";
 }
 
