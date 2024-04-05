@@ -238,6 +238,18 @@ sub run {
             }
         }
 
+        # there can be clonflict which can not be auto resolved on zypper ver < 14
+        # like libstdc++6-devel-gcc10 conflcits with never libstdc++6-pp-12.2.1
+#        my @remove = split(/,/, get_var('REMOVE_PREINSTALL_CONFLICTS', 0));
+#        if (@remove) {
+#            foreach (@remove) {
+#                record_info('Conflict', "Manually remove conflict $_");
+#                zypper_call("rm $_", exitcode => [0, 104], timeout => 500);
+#                push(@conflicting_packages, $_);
+#                push(@blocked_packages, $_);
+#            }
+#        }
+
         # separate binaries from this one patch based on patch info
         for my $b (@l2) { push(@patch_l2, $b) if grep($b eq $_, @conflict_names) && grep($b ne $_, @blocked_packages); }
         for my $b (@l3) { push(@patch_l3, $b) if grep($b eq $_, @conflict_names) && grep($b ne $_, @blocked_packages); }
@@ -321,7 +333,9 @@ sub run {
         if (scalar(keys %installable)) {
             record_info 'Preinstall', 'Install affected packages before update repo is enabled';
             if ($solver_focus) {
-                zypper_call("in -l $solver_focus" . join(' ', keys %installable), exitcode => [0, 102, 103], log => "prepare_$patch.log", timeout => 1500);
+#                zypper_call("in -l $solver_focus" . join(' ', keys %installable), exitcode => [0, 102, 103], log => "prepare_$patch.log", timeout => 1500);
+                my $packages = join(' ', keys %installable);
+                sle12_zypp_resolve("zypper -v in $packages", "prepare_$patch.log", get_var('UPDATE_RESOLVE_SOLUTION_PREINSTALL', 1));
             }
             else {
                 my $packages = join(' ', keys %installable);
