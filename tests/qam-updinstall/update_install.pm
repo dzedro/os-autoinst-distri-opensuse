@@ -411,7 +411,7 @@ sub run {
             record_info 'Uninstall patch', "Uninstall patch $patch";
             # zypper dup will downgrade dependencies of packages from patch
             if ($solver_focus) {
-                zypper_call('-v dup -l --replacefiles', exitcode => [0, 102, 103], timeout => 1500);
+                zypper_call('-v dup -l --replacefiles', exitcode => [0, 102, 103, 107], timeout => 1500);
             }
             else {
                 sle12_zypp_resolve('zypper -v dup -l --replacefiles',, get_var('UPDATE_RESOLVE_SOLUTION_UNINSTALL', 1));
