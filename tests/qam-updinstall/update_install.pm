@@ -339,6 +339,9 @@ sub run {
 
         enable_test_repositories($repos_count);
 
+        record_info 'BOOM', "Install python3-azure-mgmt";
+        zypper_call('in python3-azure-mgmt');
+
         # Patch binaries already installed.
         record_info 'Install patch', "Install patch $patch";
         if (get_var('UPDATE_PATCH_WITH_SOLVER_FEATURE')) {
