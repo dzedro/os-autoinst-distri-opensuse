@@ -411,12 +411,7 @@ sub run {
             disable_test_repositories($repos_count);
             record_info 'Uninstall patch', "Uninstall patch $patch";
             # zypper dup will downgrade dependencies of packages from patch
-            if ($solver_focus) {
-                zypper_call('-v dup -l --replacefiles', exitcode => [0, 102, 103], timeout => 1500);
-            }
-            else {
-                sle12_zypp_resolve('zypper -v dup -l --replacefiles',, get_var('UPDATE_RESOLVE_SOLUTION_UNINSTALL', 1));
-            }
+            sle12_zypp_resolve('zypper -v dup -l --replacefiles',, get_var('UPDATE_RESOLVE_SOLUTION_UNINSTALL', 1));
             # remove patched packages with multiple versions installed e.g. kernel-source
             foreach (@patch_l3, @patch_l2) {
                 zypper_call("rm $_-\$(zypper se -si $_|awk 'END{print\$7}')", exitcode => [0, 104]) if script_output("rpm -q $_|wc -l", proceed_on_failure => 1) >= 2;
