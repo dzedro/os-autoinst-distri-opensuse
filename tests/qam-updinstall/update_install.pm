@@ -323,7 +323,7 @@ sub run {
         # Install released version of installable binaries.
         if (scalar(keys %installable)) {
             record_info 'Preinstall', 'Install affected packages before update repo is enabled';
-            if ($solver_focus) {
+            if ($solver_focus && !get_var('UPDATE_RESOLVE_SOLUTION_PREINSTALL')) {
                 zypper_call("in -l $solver_focus" . join(' ', keys %installable), exitcode => [0, 102, 103], log => "prepare_$patch.log", timeout => 1500);
             }
             else {
