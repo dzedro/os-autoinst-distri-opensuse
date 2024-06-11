@@ -12,7 +12,6 @@
     mounting_options:
       should_mount: 0
 - raid_level: 0
-  chunk_size: '64 KiB'
   devices:
     - xvdb3
     - xvdc3
