@@ -96,19 +96,19 @@ sub run {
     assert_script_run "sed -i 's/bats_opts=()/bats_opts=(--tap)/' hack/bats";
 
     # user / local
-    run_tests(rootless => 1, remote => 0, skip_tests => get_var('PODMAN_BATS_SKIP_USER_LOCAL', ''));
+    run_tests(rootless => 1, remote => 0, skip_tests => get_var('PODMAN_BATS_SKIP_USER_LOCAL', '')) if check_var('TEST', 'podman_testsuite_user_local');
 
     # user / remote
-    run_tests(rootless => 1, remote => 1, skip_tests => get_var('PODMAN_BATS_SKIP_USER_REMOTE', ''));
+    run_tests(rootless => 1, remote => 1, skip_tests => get_var('PODMAN_BATS_SKIP_USER_REMOTE', '')) if check_var('TEST', 'podman_testsuite_user_remote');
 
     select_serial_terminal;
     assert_script_run("cd $test_dir/podman-$podman_version/");
 
     # root / local
-    run_tests(rootless => 0, remote => 0, skip_tests => get_var('PODMAN_BATS_SKIP_ROOT_LOCAL', ''));
+    run_tests(rootless => 0, remote => 0, skip_tests => get_var('PODMAN_BATS_SKIP_ROOT_LOCAL', '')) if check_var('TEST', 'podman_testsuite_root_local');
 
     # root / remote
-    run_tests(rootless => 0, remote => 1, skip_tests => get_var('PODMAN_BATS_SKIP_ROOT_REMOTE', ''));
+    run_tests(rootless => 0, remote => 1, skip_tests => get_var('PODMAN_BATS_SKIP_ROOT_REMOTE', '')) if check_var('TEST', 'podman_testsuite_root_remote');
 }
 
 sub cleanup() {
