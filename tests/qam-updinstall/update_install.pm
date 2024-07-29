@@ -403,6 +403,11 @@ sub run {
             # Make sure that openssh-server-config-disallow-rootlogin is not installed
             # since in s390 we need to ssh to the system to reconnect to the tty after a reboot
             zypper_call("rm openssh-server-config-disallow-rootlogin", exitcode => [0, 104]);
+            zypper_call('se -s -i kernel-default', exitcode => [0, 104]);
+            assert_script_run 'ls -l /boot/ /boot/zipl/';
+            script_run 'dracut --force', 180;
+            assert_script_run 'grub2-zipl-setup', 180;
+            assert_script_run 'ls -l /boot/ /boot/zipl/';
         }
 
         record_info 'Reboot after patch', "system is bootable after patch $patch";
