@@ -188,6 +188,8 @@ sub run {
         zypper_call("rr sle-module-packagehub-subpackages:${version}::pool sle-module-packagehub-subpackages:${version}::update");
     }
 
+    zypper_call('in snapper') if check_var('VERSION', '11-SP4');
+
     my $zypper_version = script_output(q(rpm -q zypper|awk -F. '{print$2}'));
 
     zypper_call(q{mr -d $(zypper lr | awk -F '|' '/NVIDIA/ {print $2}')}, exitcode => [0, 3]);
@@ -330,7 +332,7 @@ sub run {
                 # Patch binaries already installed.
                 record_info 'Conflict install', "Install patch $patch with conflicting $single_package";
                 if ($solver_focus) {
-                    zypper_call("in -l -t patch $patch", exitcode => [0, 102, 103], log => "zypper_$patch.log", timeout => 2000);
+                    zypper_call("in -l $solver_focus -t patch $patch", exitcode => [0, 102, 103], log => "zypper_$patch.log", timeout => 2000);
                 }
                 else {
                     sle12_zypp_resolve("zypper -v in -l -t patch $patch", get_var('UPDATE_RESOLVE_SOLUTION_CONFLICT_INSTALL', 1));
