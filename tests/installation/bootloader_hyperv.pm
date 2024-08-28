@@ -146,7 +146,7 @@ sub run {
     enter_cmd 'pgrep -a Xvnc';
     enter_cmd "pvnc=\$(pgrep -f Xvnc[[:space:]]*:${xvncport}[[:space:]]*-geometry)";
     enter_cmd '[ -n "$pvnc" ] && kill -9 $pvnc';
-    enter_cmd "Xvnc :$xvncport -geometry 1024x768 -pn -rfbauth ~/.vnc/passwd &";
+    enter_cmd "Xvnc :$xvncport -geometry 1024x768 -pn -rfbauth ~/.vnc/passwd -AlwaysShared &";
 
     my $ps = 'powershell -Command';
 
