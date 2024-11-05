@@ -383,7 +383,7 @@ sub run {
         record_info 'Install patch', "Install patch $patch";
         if (get_var('UPDATE_PATCH_WITH_SOLVER_FEATURE')) {
             if ($solver_focus) {
-                zypper_call("in -l $patch_replacefiles $solver_focus -t patch $patch", exitcode => [0, 102, 103], log => "zypper_$patch.log", timeout => 1500);
+                zypper_call("in -l -f $patch_replacefiles $solver_focus -t patch $patch", exitcode => [0, 102, 103], log => "zypper_$patch.log", timeout => 1500);
             }
             else {
                 if (get_var('UPDATE_RESOLVE_SOLUTION_INSTALL')) {
