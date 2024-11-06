@@ -95,6 +95,13 @@ my @conflicting_packages = (
 # https://progress.opensuse.org/issues/153388
 push(@conflicting_packages, ('dpdk-thunderx', 'dpdk-thunderx-devel', 'dpdk-thunderx-kmp-default')) if is_aarch64;
 push(@conflicting_packages, ('dpdk22-thunderx', 'dpdk22-thunderx-devel', 'dpdk22-thunderx-kmp-default')) if is_aarch64;
+# %package tools
+# %if "%flavor" == "openssl1_1"
+# Conflicts:      libica-tools
+# %else
+# Conflicts:      libica-openssl1_1-tools
+# %endif
+push(@conflicting_packages, ('libica-openssl1_1-tools')) if is_s390x;
 
 my @conflicting_packages_sle12 = ('apache2-prefork', 'apache2-doc', 'apache2-example-pages', 'apache2-utils', 'apache2-worker',
     'apache2-tls13', 'apache2-tls13-doc', 'apache2-tls13-example-pages', 'apache2-tls13-prefork', 'apache2-tls13-worker',
