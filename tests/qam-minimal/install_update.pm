@@ -50,6 +50,8 @@ sub run {
     power_action('reboot', textmode => 1);
     $self->wait_boot(bootloader_time => get_var('BOOTLOADER_TIMEOUT', 200));
     select_serial_terminal;
+    zypper_call('purge-kernels');
+    wait_for_purge_kernels;
 
     capture_state('before');
 
