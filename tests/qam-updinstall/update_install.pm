@@ -360,7 +360,7 @@ sub run {
         if (scalar(keys %installable)) {
             record_info 'Preinstall', 'Install affected packages before update repo is enabled';
             if ($solver_focus) {
-                zypper_call("in -l $solver_focus" . join(' ', keys %installable), exitcode => [0, 102, 103], log => "prepare_$patch.log", timeout => 1500);
+                zypper_call("in -l $solver_focus" . join(' ', keys %installable), exitcode => [0, 102, 103, 107], log => "prepare_$patch.log", timeout => 1500);
             }
             else {
                 my $packages = join(' ', keys %installable);
