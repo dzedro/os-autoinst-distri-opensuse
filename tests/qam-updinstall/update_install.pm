@@ -62,6 +62,7 @@ use serial_terminal 'select_serial_terminal';
 use version_utils qw(is_sle);
 use Utils::Architectures qw(is_aarch64 is_ppc64le is_s390x);
 use Data::Dumper qw(Dumper);
+use registration;
 
 my @conflicting_packages = (
     'libwx_base-suse-nostl-devel', 'wxWidgets-3_2-nostl-devel',
@@ -197,6 +198,15 @@ sub run {
         my $version = get_var('VERSION');
         record_info('remove phub', 'known conflict on qemu update with phub repo poo#162704');
         zypper_call("rr sle-module-packagehub-subpackages:${version}::pool sle-module-packagehub-subpackages:${version}::update");
+    }
+
+    if (is_sle('=15-SP4')) {
+        register_product;
+        add_suseconnect_product(get_addon_fullname('phub'));
+        zypper_call('in clang15 llvm15');
+        zypper_call('if llvm15');
+        remove_suseconnect_product(get_addon_fullname('phub'));
+        assert_script_run('SUSEConnect -d');
     }
 
     my $zypper_version = script_output(q(rpm -q zypper|awk -F. '{print$2}'));
