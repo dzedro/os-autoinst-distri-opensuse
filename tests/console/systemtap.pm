@@ -17,8 +17,10 @@ use serial_terminal 'select_serial_terminal';
 use utils;
 use kdump_utils;
 use version_utils qw(is_sle);
+use power_action_utils qw(power_action);
 
 sub run {
+    my ($self) = @_;
     select_serial_terminal;
     prepare_for_kdump();
     zypper_call("in systemtap systemtap-docs kernel-devel systemtap-server");
@@ -28,7 +30,11 @@ sub run {
         my $kernel_d = script_output('uname -r | grep -oP ".*(?=-default)"');
         my $dev = zypper_call("se -i -s kernel-default-devel", exitcode => [0, 104]);
         if ($dev ne '104') {
-            die "Installed kernel-devel does not match kernel version. This usually happens when there's a new kernel, wait a day to see if the image is updated \nExpected: $kernel_d, Found: Other kernel-default-devel versions";
+            record_info('Update', 'Install latest kernel and boot it');
+            zypper_call('up');
+            power_action('reboot', textmode => 1);
+            $self->wait_boot(bootloader_time => 300);
+            select_serial_terminal;
         } else {
             die "kernel-devel package is required but not installed\nExpected: $kernel_d, Found: No kernel-default-devel package installed";
         }
