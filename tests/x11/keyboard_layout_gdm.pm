@@ -29,6 +29,10 @@ sub run {
     # login
     select_console('root-console');
 
+    record_info('Debug');
+    assert_script_run 'stat /etc/vconsole.conf';
+    assert_script_run 'cat /etc/vconsole.conf';
+
     # disable autologin
     assert_script_run "sed -i.bak '/^DISPLAYMANAGER_AUTOLOGIN=/s/=.*/=\"\"/' /etc/sysconfig/displaymanager";
 

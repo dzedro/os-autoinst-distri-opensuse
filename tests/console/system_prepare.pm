@@ -38,6 +38,10 @@ sub run {
 
     prepare_serial_console;
 
+    record_info('Debug');
+    assert_script_run 'stat /etc/vconsole.conf';
+    assert_script_run 'cat /etc/vconsole.conf';
+
     # This code checks if the environment is Hyper-V 2016 with UEFI. If true,
     # it adds a new VM network adapter connected to a virtual switch and logs a known UEFI boot issue.
     if (check_var('HYPERV_VERSION', '2016') && is_uefi_boot) {
