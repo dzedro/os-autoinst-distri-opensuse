@@ -22,7 +22,7 @@ use base "consoletest";
 use testapi;
 use serial_terminal 'select_serial_terminal';
 use version_utils qw(is_leap is_sle);
-use utils qw(check_console_font disable_serial_getty zypper_call);
+use utils qw(check_console_font disable_serial_getty zypper_call wait_for_purge_kernels);
 use Utils::Backends qw(has_ttys);
 use Utils::Systemd qw(disable_and_stop_service systemctl);
 use Utils::Logging 'export_logs';
@@ -34,6 +34,7 @@ sub run {
     my $user = $testapi::username;
     select_serial_terminal;
 
+    wait_for_purge_kernels if is_sle('>=16');
     zypper_call('in openssh-server') if is_sle('>=16');
     systemctl('start sshd');
 
