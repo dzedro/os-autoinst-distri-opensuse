@@ -206,6 +206,9 @@
   <bootloader>
     <global>
       <timeout config:type="integer">-1</timeout>
+      % if ($check_var->('ARCH', 'ppc64le')) {
+      <append>disable_ddw=1</append>
+      % }
     </global>
     % if ($check_var->('UEFI', '1')) {
     <loader_type>grub2-efi</loader_type>
