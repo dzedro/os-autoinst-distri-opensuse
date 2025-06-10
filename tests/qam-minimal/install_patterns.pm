@@ -59,9 +59,13 @@ sub run {
     zypper_call("in -t pattern base x11 " . (is_sle('>=15') ? 'gnome_basic' : 'gnome-basic') . " apparmor", exitcode => [0, 102], timeout => 2000);
 
     systemctl 'set-default graphical.target';
-    script_run('sed -i -r "s/^DISPLAYMANAGER=\"\"/DISPLAYMANAGER=\"gdm\"/" /etc/sysconfig/displaymanager');
+    script_run('sed -i -r "s/^DISPLAYMANAGER=\"\"/DISPLAYMANAGER=\"gnome\"/" /etc/sysconfig/displaymanager');
     script_run('sed -i -r "s/^DISPLAYMANAGER_AUTOLOGIN/#DISPLAYMANAGER_AUTOLOGIN/" /etc/sysconfig/displaymanager');
-    script_run('sed -i -r "s/^DEFAULT_WM=\"icewm\"/DEFAULT_VM=\"\"/" /etc/sysconfig/windowmanager');
+    script_run('sed -i -r "s/^DISPLAYMANAGER_STARTS_XSERVER=\"no\"/DISPLAYMANAGER_STARTS_XSERVER=\"yes\"/" /etc/sysconfig/displaymanager');
+    script_run('sed -i -r "s/^DEFAULT_WM=\"\"/DEFAULT_VM=\"default\"/" /etc/sysconfig/windowmanager');
+    script_run('cat /etc/sysconfig/windowmanager');
+    script_run('cat /etc/sysconfig/displaymanager');
+    script_run('zypper se -t pattern');
     # now we have gnome installed - restore DESKTOP variable
     set_var('DESKTOP', 'gnome', reload_needles => 1);
 

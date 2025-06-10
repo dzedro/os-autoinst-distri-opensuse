@@ -1,0 +1,303 @@
+[33mcommit 569cfe2445df372123bf5593eb98518c85cdeb34[m
+Author: rfan1 <richard.fan@suse.com>
+Date:   Thu Mar 13 19:25:25 2025 -0400
+
+    Fix sudo logic for sle16
+    
+    https://progress.opensuse.org/issues/178453
+
+[33mcommit 33aae1daf5ac131b030aae37fccde9ef25dab50b[m
+Author: phoenix <felix.niederwanger@suse.com>
+Date:   Wed Apr 3 14:09:33 2024 +0200
+
+    Add switch for determining Defaults targetpw
+    
+    Azure 15-SP2 images are expected to get the '#Defaults targetpw' change
+    in sudoers eventually. In the meantime, we need to check if this change
+    is present there and mark it as softfailure for bsc#1207076.
+
+[33mcommit a84e9c5b41bef68f2b8f91945ee1f01a39358520[m
+Author: phoenix <felix.niederwanger@suse.com>
+Date:   Mon Mar 25 10:58:07 2024 +0100
+
+    Fix sudo workflow for testapi user
+    
+    Fix the workflow for the testapi user (bernhard) on publiccloud by
+    allowing the testapi user to run sudo commands.
+    
+    Also check in the sudo test runs for the expected user for the password input.
+
+[33mcommit 58234fd3d37d4c8d600974f43be0558a4d9c7137[m
+Author: rfan1 <richard.fan@suse.com>
+Date:   Sun Mar 10 22:50:31 2024 -0400
+
+    Fix sudo test logic for NOPASSWD
+    
+    https://progress.opensuse.org/issues/156928
+
+[33mcommit 1ad70b36d24718ae3b610b80cf7773e4e610b967[m
+Author: Jozef Pupava <jpupava@suse.com>
+Date:   Wed Dec 27 13:26:32 2023 +0100
+
+    sudo: Fix sudo id -un
+    
+    https://progress.opensuse.org/issues/152915 https://progress.opensuse.org/issues/152915
+
+[33mcommit 5dbf3d2f8ef310cefb0b6fd4f46b1725bff57d16[m
+Author: phoenix <felix.niederwanger@suse.com>
+Date:   Fri Dec 22 08:17:13 2023 +0100
+
+    Upload suoders on failure
+    
+    Upload the sudoers directory when the test fails to allow better
+    investigation.
+
+[33mcommit b4219513867662e8e199231df9bfb993a6e90061[m
+Author: phoenix <felix.niederwanger@suse.com>
+Date:   Thu Dec 21 11:51:12 2023 +0100
+
+    Fix sudo on 15-SP4
+    
+    Fix for sudo on Azure for SLE 15-SP4, where the expected user is root.
+
+[33mcommit 12c0e7b4ee4ea224834cfe20fcdac2a00c5c4a22[m
+Author: Ricardo Branco <rbranco@suse.de>
+Date:   Mon Dec 18 15:55:09 2023 +0100
+
+    Fix sudo on Azure for SLE 15-SP4+
+
+[33mcommit 4b6d0bc4fa057058d37ed26e571aede09db0dbb0[m
+Author: Dominique Leuenberger <dimstar@opensuse.org>
+Date:   Tue Nov 28 13:20:57 2023 +0100
+
+    sudo: copy template config from /usr/etc to /etc before modifying it
+
+[33mcommit 0664723e8fd5d483b58e030d0b0ffdc96d3573a5[m
+Author: mloviska <mloviska@suse.com>
+Date:   Thu Jun 8 20:48:26 2023 +0200
+
+    sudo asks for invoking user's password on Azure
+    
+    As per https://bugzilla.suse.com/show_bug.cgi?id=1205325#c29 sudo is
+    configure on Azure images to ask for invoking user's password instead of
+    target's user password. This change will eventually hit all supported
+    Azure images.
+    
+    - ticket: [publiccloud_consoletests fail in sudo](https://progress.opensuse.org/issues/130432)
+
+[33mcommit 6bf1b1cb6c1fbe81690f9e599ebbf8140edb6a6a[m
+Author: mloviska <mloviska@suse.com>
+Date:   Wed Nov 9 16:21:25 2022 +0100
+
+    PubCloud: root password set by tests
+    
+    Follow up for PR#15849
+    Password for root is configured in `publiccloud/prepare_instance.pm` in
+    order to run console tests.
+    
+    - ticket: [test fails in sudo](https://progress.opensuse.org/issues/119860)
+
+[33mcommit 0b5179fb9fb7205b5377f4bb1b830a4957a5d2f1[m
+Author: Fabian Vogt <fvogt@suse.de>
+Date:   Mon Nov 7 15:14:25 2022 +0100
+
+    tests/console/sudo: Test the default configuration
+    
+    Test sudo without changing the configuration. The expected behaviour is
+    different on public cloud.
+    
+    During development I noticed that expect continues on if the expected string
+    was not seen, it just waits for a timeout to expire. Make the expected string
+    mandatory by handling timeout and EOF with exit 1.
+
+[33mcommit 4f0b2cce56080595cdbb82b7dd9a8149b6574a0c[m
+Author: phoenix <felix.niederwanger@suse.com>
+Date:   Mon Apr 4 11:35:56 2022 +0200
+
+    Increase timeout for yast2 installation
+    
+    Fix occasional timeout issues in the installation of yast2.
+
+[33mcommit 814a1933a324cae99f93e205f545b91cde42782b[m
+Author: Pavel Dostál <pdostal@suse.cz>
+Date:   Fri Jan 21 13:53:22 2022 +0100
+
+    Replace publiccloud::utils::is_publiccloud() by version_utils::is_public_cloud()
+
+[33mcommit cae6400303ef59c58de143fbaf3050bf5e22457e[m
+Merge: 218c5f059 6af8aeda0
+Author: Oliver Kurz <okurz@suse.de>
+Date:   Wed Oct 13 11:05:10 2021 +0200
+
+    Merge pull request #13405 from okurz/feature/license
+    
+    Streamline and simplify Copyright+License handling
+
+[33mcommit b93965cc34655843e208ebc74b48f7402823aeb7[m
+Author: Petr Vorel <pvorel@suse.cz>
+Date:   Tue Oct 12 09:12:04 2021 +0200
+
+    Reformat code to current perltidy proposal
+    
+    proposal to use perltidy with --only-changed [1], leads to massive
+    whitespace change.
+    
+    [1] https://github.com/os-autoinst/os-autoinst/pull/1787
+    
+    Signed-off-by: Petr Vorel <pvorel@suse.cz>
+
+[33mcommit 4b5652fa7ade090b336dbe7665aef9056c17ca15[m
+Author: Oliver Kurz <okurz@suse.de>
+Date:   Wed Oct 6 22:33:35 2021 +0200
+
+    Use consistent abbreviated SPDX license identifiers for all FSFAP files
+    
+    Same as for GPL but now for all files that are licensed with the FSFAP license.
+    I used the command
+    
+    ```
+    sed -i ':a;N;$!ba;s@#\n# Copying and distribution of this file.*without any warranty.@# SPDX-License-Identifier: FSFAP@g' $(git grep -I -l 'Copying and distribution of this file')
+    ```
+    
+    The following files needed manual fixup due to inconsistent format or
+    being exceptions like a C file:
+    * data/valgrind/valgrind-test.c
+    * data/wpa_supplicant/README.md
+    * tests/network/curl_client.pm
+    * tests/x11/evolution/evolution_meeting_imap.pm
+    * tests/x11/evolution/evolution_meeting_pop.pm
+    
+    Some others I only found with unusual search commands due to mistyped
+    license texts, seriously, typos in the license texts:
+    * tests/feature/feature_console/zypper_crit_sec_fix_only.pm
+    
+    https://progress.opensuse.org/issues/98616
+
+[33mcommit bc535976e2643fc618850fd921beac3d54934378[m
+Author: Oliver Kurz <okurz@suse.de>
+Date:   Tue Oct 5 12:01:14 2021 +0200
+
+    Use consistent "Copyright" header without problematic characters
+    
+    Same as done for os-autoinst in
+    https://github.com/os-autoinst/os-autoinst/pull/1799 and openQA in
+    https://github.com/os-autoinst/openQA/pull/4265
+    
+    https://en.wikipedia.org/wiki/Copyright_symbol
+    explains that (c) can be used as a commonly accepted alternative to the
+    non-ASCII character previously used which can sometimes (still) cause
+    problems which we can avoid.
+    
+    According to https://stackoverflow.com/a/221380 even the character
+    itself is seen as redundant as a repetition of the word "Copyright".
+    Also in the United States, the Berne Convention Implementation Act of
+    1988, effective March 1, 1989, removed the requirement for the copyright
+    symbol from U.S. copyright law so it is not necessary after all.
+    
+    So we could have selected "(c)" or treat all files as unicode and
+    convert any ISO8859-1 copyright characters to the according unicode
+    character symbol or just get rid of the character at all.
+    
+    This commit removes all variants of copyright characters in our source
+    files excluding binary files, full-text license files or external
+    references, i.e. os-autoinst-common.
+    
+    I used the command
+    
+    ```
+    git grep -l 'Copyright' | xargs sed -i 's/Copyright \((C)\|(c)\|©\)/Copyright/g'
+    ```
+    
+    and manually reverted the changes in places where the change was
+    unintended as stated above.
+    
+    This helps to not upset TidyAll and also seems to be a more consistent
+    standard among source files in multiple projects.
+    
+    Related progress issue: https://progress.opensuse.org/issues/98616
+
+[33mcommit 689b22fd4ccfd834dc9c4c624c9ee10e378d88dc[m
+Author: phoenix <felix.niederwanger@suse.com>
+Date:   Fri Jul 2 11:08:54 2021 +0200
+
+    Fix sudo test for publiccloud
+    
+    On publiccloud the root password needs to be set for this test to work.
+    An additional check, if the password is required has been added as well.
+
+[33mcommit bfeeb86cbdddc9cc1023dde9cd51844464387978[m
+Author: Oliver Kurz <okurz@suse.de>
+Date:   Fri Mar 5 16:18:58 2021 +0100
+
+    Use new test API function "enter_cmd" where applicable
+    
+    Commands used to replace:
+    
+    ```
+    git grep -l 'type_string.*\\n' | xargs sed -i 's/type_string\(.*\)\\n/enter_cmd\1/g'
+    git grep -l 'enter_cmd[ (]""' | xargs sed -i "s/enter_cmd[ (]\"\"[)]\?/send_key 'ret'/g"
+    tools/tidy --only-changed
+    ```
+    
+    Plus some manual additions, e.g. the functions "enter_cmd_slow" and
+    "enter_cmd_very_slow" in lib/utils.pm.
+    
+    Related progress issue: https://progress.opensuse.org/issues/88452
+
+[33mcommit a3a95ce94f4e50fc2a1029fea946964c89769d78[m
+Author: felix.niederwanger@suse.com <phoenix>
+Date:   Wed Mar 17 16:50:33 2021 +0100
+
+    Fix sudo for publiccloud 12-SP5 runs
+    
+    sudo on PC 12-SP5 requires additional commands to be added to sudoers.
+
+[33mcommit baa914b73939d44de43fa796d226ca0954863f51[m
+Author: Ednilson Miura <emiura@suse.com>
+Date:   Mon Dec 14 11:30:23 2020 -0300
+
+    Add "Package:" tag with packages used on the test
+
+[33mcommit bd5d6fc4abeb08fe0ea47f80a88b1b59e7c7ce0a[m
+Author: Dominique Leuenberger <dimstar@opensuse.org>
+Date:   Wed Jan 29 20:38:30 2020 +0100
+
+    sudo: Stop abusing /proc/sys/vm/drop_caches
+    
+    In newer kernels (>= 5.4), the drop_caches proc file has been turned into a
+    write-only file. As such, reading from it is no longer permitted.
+    
+    https://github.com/torvalds/linux/commit/204cb79ad42f015312a5bbd7012d09c93d9b46fb
+    
+    In fact, we don't need drop_caches, as we simply abused this file before. Let's simple
+    write to /run/openqa_sudo_test, which is also only writable by root. As a bonus,
+    we always expect to read from the file what we just wrote to it, making it a bit more
+    obvious what to expect.
+    
+    https://progress.opensuse.org/issues/62168
+
+[33mcommit 8f9a9a222de6eb38734609f98a3664fab5039315[m
+Author: Jozef Pupava <jpupava@suse.com>
+Date:   Thu Sep 26 08:10:45 2019 +0200
+
+    Wait for shell logout to finish
+
+[33mcommit 3be2917a55face6dc2aef6f3ccde14f1b0338170[m
+Author: Jozef Pupava <jpupava@suse.com>
+Date:   Thu Sep 12 10:16:45 2019 +0200
+
+    Remove workaround bsc#1130159
+
+[33mcommit 3869780a279f29dcefbf4b3c2d1cd68b9b472deb[m
+Author: Jozef Pupava <jpupava@suse.com>
+Date:   Mon Mar 25 13:34:49 2019 +0100
+
+    Install expect needed for test
+
+[33mcommit ea902139e729387b5c3ef92866361edad5adc401[m
+Author: Jozef Pupava <jpupava@suse.com>
+Date:   Thu Mar 21 12:06:16 2019 +0100
+
+    Sudo test
+    
+    https://progress.opensuse.org/issues/49013
