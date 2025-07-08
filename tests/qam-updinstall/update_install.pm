@@ -365,7 +365,8 @@ sub run {
         if (scalar(keys %installable)) {
             record_info 'Preinstall', 'Install affected packages before update repo is enabled';
             if ($solver_focus) {
-                zypper_call("in -l $solver_focus" . join(' ', keys %installable), exitcode => [0, 102, 103], log => "prepare_$patch.log", timeout => 1500);
+                sle12_zypp_resolve("zypper -v in -l $solver_focus" . join(' ', keys %installable), get_var('UPDATE_RESOLVE_SOLUTION_CONFLICT_INSTALL', 1));
+                #zypper_call("in -l $solver_focus" . join(' ', keys %installable), exitcode => [0, 102, 103], log => "prepare_$patch.log", timeout => 1500);
                 die "Package scriptlet failed, check log prepare_${patch}." if (script_run("grep 'scriptlet failed, exit status' /tmp/prepare_${patch}.log") == 0);
             }
             else {
