@@ -64,6 +64,7 @@ use serial_terminal 'select_serial_terminal';
 use version_utils qw(is_sle);
 use Utils::Architectures qw(is_aarch64 is_ppc64le is_s390x);
 use Data::Dumper qw(Dumper);
+use registration;
 
 my @conflicting_packages = (
     'libwx_base-suse-nostl-devel', 'wxWidgets-3_2-nostl-devel',
@@ -182,8 +183,24 @@ sub sle12_zypp_resolve {
 }
 
 sub reboot_and_login {
+    my @packages = @_;
     prepare_system_shutdown;
-    power_action('reboot');
+    if (is_sle('=15-SP7') && grep(/SLES16-Migration/ || /SLES16-SAP_Migration/, @packages)) {
+        select_console('root-console');
+        # https://bugzilla.suse.com/show_bug.cgi?id=1249091
+        enter_cmd('/usr/sbin/run_migration');
+        if (is_s390x) {
+            # paused and manually installed opnessh-server-config-rootlogin via virsh console on SUT
+            # https://suse.slack.com/archives/C02CLB8TZP1/p1763144536375889?thread_ts=1762413923.381709&cid=C02CLB8TZP1
+            sleep 300;
+        }
+        else {
+            assert_screen('SLES16-Migration', 1000);
+        }
+    }
+    else {
+        power_action('reboot');
+    }
     opensusebasetest::wait_boot(opensusebasetest->new(), bootloader_time => 200);
     select_serial_terminal;
 }
@@ -203,6 +220,14 @@ sub run {
     }
 
     select_serial_terminal;
+
+    if (get_var('SLES16_MIGRATION') && is_s390x) {
+        assert_script_run(q(sed -i 's/cio_ignore=all/cio_ignore=false/' /etc/default/grub /boot/zipl/config && grub2-mkconfig -o /boot/grub2/grub.cfg));
+        assert_script_run(q(cio_ignore -l));
+        assert_script_run(q(cio_ignore -R));
+        assert_script_run(q(cio_ignore -l));
+        assert_script_run('cat /proc/cmdline');
+    }
 
     # remove phub repos on qemu update ppc64le https://progress.opensuse.org/issues/162704
     if (get_var('BUILD') =~ /qemu/ && get_var('INCIDENT_REPO') !~ /Packagehub-Subpackages/) {
@@ -267,6 +292,17 @@ sub run {
     }
     die "Parsing binaries from SMELT data failed" if not keys %bins;
 
+    if (is_sle('=15-SP7') && grep(/SLES16-Migration/ || /SLES16-SAP_Migration/, @packages)) {
+        set_var('SLES16_MIGRATION', 1);
+        assert_script_run('rm -f /etc/zypp/repos.d/[sS][lL][eE]*');
+        assert_script_run('zypper lr -u');
+        register_product;
+        if (get_var('FLAVOR') =~ /-(HA)-/) {
+            my $scc_regcode_ha = get_var('SCC_REGCODE_HA');
+            add_suseconnect_product('sle-ha', undef, undef, "-r $scc_regcode_ha");
+        }
+    }
+
     my @l2 = grep { ($bins{$_}->{supportstatus} eq 'l2') } keys %bins;
     my @l3 = grep { ($bins{$_}->{supportstatus} eq 'l3') } keys %bins;
     my @unsupported = grep { ($bins{$_}->{supportstatus} eq 'unsupported') } keys %bins;
@@ -283,6 +319,8 @@ sub run {
 
         # https://progress.opensuse.org/issues/131534
         next if $patch !~ /TERADATA/ && get_var('FLAVOR') =~ /TERADATA/;
+        # https://progress.opensuse.org/issues/189183
+        next if $patch =~ /Basesystem-15-SP7/ && get_var('FLAVOR') =~ /-SAP-/ && grep(/SLES16-Migration/, @packages);
 
         # Check if the patch was correctly configured.
         # Get info about the patch included in the update.
@@ -456,8 +494,11 @@ sub run {
             zypper_call("rm openssh-server-config-disallow-rootlogin", exitcode => [0, 104]);
         }
 
+        # https://suse.slack.com/archives/C02CLB8TZP1/p1762952011794469?thread_ts=1762413923.381709&cid=C02CLB8TZP1
+        disable_test_repositories($repos_count) if get_var('SLES16_MIGRATION');
+
         record_info 'Reboot after patch', "system is bootable after patch $patch";
-        reboot_and_login;
+        reboot_and_login(@packages);
 
         if ($patch_info_status !~ /Status\s+: applied/ && script_run("grep '$patch already installed' /tmp/zypper_$patch.log") == 1) {
             # After and only if the patches have been applied and the new binaries
@@ -512,7 +553,31 @@ sub post_fail_hook {
     my $self = shift;
     force_soft_failure('Expected to fail') if get_var('BUILD') =~ /update-test-trivial/;
     return if get_var('BUILD') =~ /update-test-trivial/;
+    if (check_screen('grub2', 5)) {
+        # if test ended in grub2, finish boot and login to get logs
+        send_key('ret');
+        assert_screen('linux-login');
+        reset_consoles;
+    }
+    select_serial_terminal;
     $self->SUPER::post_fail_hook;
+    upload_logs('/var/log/zypper.log', failok => 1);
+    if (get_var('SLES16_MIGRATION')) {
+        assert_script_run('sync; ls -lA /var/log');
+        upload_logs('/system-root/var/log/distro_migration.log', failok => 1, log_name => 'system-root_distro_migration.log.txt');
+        upload_logs('/var/log/distro_migration.log', failok => 1, log_name => 'distro_migration.log.txt');
+        upload_logs('/var/log/migration_startup.log', failok => 1, log_name => 'migration_startup.log.txt');
+    }
+}
+
+sub post_run_hook {
+    upload_logs('/var/log/zypper.log', failok => 1);
+    if (get_var('SLES16_MIGRATION')) {
+        upload_logs('/system-root/var/log/distro_migration.log', failok => 1, log_name => 'system-root_distro_migration.log.txt');
+        upload_logs('/var/log/distro_migration.log', failok => 1, log_name => 'distro_migration.log.txt');
+        upload_logs('/var/log/migration_startup.log', failok => 1, log_name => 'migration_startup.log.txt');
+        die 'SLE16 migration failed, see distro_migration.log' if script_run('grep "Migration failed" /var/log/distro_migration.log') == 0;
+    }
 }
 
 sub test_flags {
