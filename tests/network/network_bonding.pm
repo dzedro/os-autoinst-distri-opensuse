@@ -11,7 +11,7 @@ use testapi;
 use power_action_utils "power_action";
 use utils qw(validate_script_output_retry);
 use serial_terminal qw(select_serial_terminal);
-use network_utils qw(get_nics cidr_to_netmask is_nm_used is_wicked_used check_connectivity_to_host_with_retry delete_all_existing_connections create_bond add_interfaces_to_bond set_nics_link_speed_duplex);
+use network_utils qw(get_nics cidr_to_netmask is_nm_used is_wicked_used check_connectivity_to_host_with_retry delete_all_existing_connections create_bond add_interfaces_to_bond set_nics_link_speed_duplex set_nic_dhcp_auto);
 use lockapi;
 use utils;
 use console::ovs_utils;
@@ -144,6 +144,21 @@ sub run {
     }
 
     barrier_wait "BONDING_TESTS_DONE";
+}
+
+sub post_fail_hook {
+    record_info('FAIL', 'post fail');
+    my $nic = get_nics([])->[0];
+    delete_all_existing_connections;
+    set_nic_dhcp_auto($nic);
+    reload_connections_until_all_ips_assigned(nics => [$nic]);
+    check_connectivity_to_host_with_retry($nic, "conncheck.opensuse.org");
+    #if (is_nm_used()) {
+    #}
+
+    #if (is_wicked_used()) {
+    #}
+    $self->SUPER::post_fail_hook;
 }
 
 1;
