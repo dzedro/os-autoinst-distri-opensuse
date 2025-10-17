@@ -487,6 +487,7 @@ sub run {
                 zypper_call("in -l $solver_focus $_", exitcode => [0, 102, 103], log => "new_${_}_conflicts.log", timeout => 1500);
             }
         }
+        zypper_call("in suse-migration-sle16-activation", exitcode => [0, 102, 103], timeout => 1500) if is_sle('=15-SP7') && grep(/SLES16-SAP_Migration/, @packages) && !is_s390x;
 
         if (is_s390x) {
             # Make sure that openssh-server-config-disallow-rootlogin is not installed
