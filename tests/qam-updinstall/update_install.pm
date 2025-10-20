@@ -212,14 +212,9 @@ sub run {
         zypper_call("rr sle-module-packagehub-subpackages:${version}::pool sle-module-packagehub-subpackages:${version}::update");
     }
 
-    if (is_sle('=15-SP4')) {
-        register_product;
-        add_suseconnect_product(get_addon_fullname('phub'));
-        zypper_call('in clang15 llvm15');
-        zypper_call('if llvm15');
-        remove_suseconnect_product(get_addon_fullname('phub'));
-        assert_script_run('SUSEConnect -d');
-    }
+    # add Package hub via SCC because for some reason ibs repo does not have all packages
+    register_product;
+    add_suseconnect_product(get_addon_fullname('phub'));
 
     my $zypper_version = script_output(q(rpm -q zypper|awk -F. '{print$2}'));
 
@@ -241,6 +236,9 @@ sub run {
 
     # Patch the SUT to a released state and reboot if reboot is needed;
     reboot_and_login if fully_patch_system == 102;
+
+    zypper_call('purge-kernels');
+    wait_for_purge_kernels;
 
     set_var('MAINT_TEST_REPO', $repos);
     my $repos_count = add_test_repositories;
@@ -496,6 +494,7 @@ sub run {
             record_info 'Rollback', "Rollback system before $patch";
             assert_script_run("snapper rollback $rollback_number") if is_sle('12-sp3+');
             reboot_and_login;
+            script_run('while pgrep SUSEConnect; do sleep 5; done', timeout => 60);
         }
     }
 

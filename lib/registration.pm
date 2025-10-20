@@ -262,6 +262,7 @@ SUSEConnect --url with SMT/RMT server.
 =cut
 
 sub register_product {
+    $debug_flag .= ' --gpg-auto-import-keys ' if check_var('SLE_PRODUCT', 'sled');
     if (get_var('SMT_URL')) {
         assert_script_run("SUSEConnect  $debug_flag --url " . get_var('SMT_URL') . ' ' . uc(get_var('SLE_PRODUCT')) . '/' . scc_version(get_var('HDDVERSION')) . '/' . get_var('ARCH'), 200);
     } else {
