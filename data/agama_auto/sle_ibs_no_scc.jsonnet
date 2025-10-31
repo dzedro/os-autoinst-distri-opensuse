@@ -1,9 +1,12 @@
-local arch = '{{ARCH}}';
-local version = '{{VERSION}}';
 {
   product: {
     id: '{{AGAMA_PRODUCT_ID}}',
-    registrationCode: '{{SCC_REGCODE}}'
+    registrationCode: '{{SCC_REGCODE}}',
+    addons: [
+      {
+        id: 'PackageHub',
+      }
+    ]
   },
   bootloader: {
     stopOnBootMenu: true,
@@ -20,13 +23,6 @@ local version = '{{VERSION}}';
   },
   software: {
     patterns: ['base', 'minimal_base'],
-    extraRepositories: [
-      {
-        alias: 'SLES::16.0::product',
-        url: "http://dist.suse.de/ibs/SUSE:/SLFO:/Products:/SLES:/16.0:/TEST/product/repo/SLES-%s-%s" % [version, arch],
-        allowUnsigned: true
-      }
-    ],
   },
   questions: {
     policy: 'auto',
@@ -46,7 +42,6 @@ local version = '{{VERSION}}';
           #!/usr/bin/env bash
           echo 'PermitRootLogin yes' > /etc/ssh/sshd_config.d/root.conf
           systemctl enable sshd
-          SUSEConnect -d || SUSEConnect --cleanup
         |||
       }
     ]
