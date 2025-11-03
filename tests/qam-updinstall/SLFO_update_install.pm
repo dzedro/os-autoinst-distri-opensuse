@@ -83,7 +83,7 @@ sub run {
     die 'No patch found!' unless scalar(@patches);
 
     for my $patch (@patches) {
-        my @update_conflicts;
+        my (@update_conflicts, @new_packages);
         # Get info about the update patch.
         my $patch_info = script_output("zypper -n info -t patch $patch", 200);
         my @patchinfo = split '\n', $patch_info;
@@ -102,7 +102,7 @@ sub run {
 
         # Make a list of the conflicting binaries in this patch
         my @patch_conflicts = uniq pairmap {
-            map { $_ =~ /(^\s+(?<with_ext>\S*)(\.(?!src)\S* <))|^\s+(?!srcpackage:)(?<no_ext>\S*)/; $+{with_ext} // $+{no_ext} } @patchinfo[$a .. $b] } @ranges;
+            map { $_ =~ /(^\s+(?!srcpackage:)(?<with_ext>\S*)(\.(?!src)\S* <))|^\s+(?!srcpackage:)(?<no_ext>\S*)/; $+{with_ext} // $+{no_ext} } @patchinfo[$a .. $b] } @ranges;
         print "Conflicting packages: @patch_conflicts\n";
 
         for my $pkg (@patch_conflicts) {
@@ -140,9 +140,15 @@ sub run {
         }
 
         # Install released binaries present in patch
-        record_info 'Preinstall', 'Install affected packages before update repo is enabled';
+        record_info 'Preinstall', "Install affected packages before update repo is enabled:\n@patch_conflicts";
         zypper_call("--ignore-unknown in -l --force-resolution --solver-focus Update @patch_conflicts", exitcode => [0, 102, 103, 104], log => "prepare_$patch.log", timeout => 1500);
-        record_soft_failure "poo#1234 Preinstalled package is missing, check log prepare_${patch}." if (script_run("grep 'not found in package names' /tmp/prepare_${patch}.log") == 0);
+        if (script_run("grep 'not found in package names' /tmp/prepare_${patch}.log") == 0) {
+            foreach my $line (split("\n", script_output("grep 'not found in package names' /tmp/prepare_${patch}.log"))) {
+                next if grep { /libnvme/ } $line;
+                $line =~ s/'(python)-(\w+)'/'$1*-$2'/;
+                push(@new_packages, $1) if $line =~ /'(\S+)'/;
+            }
+        }
 
         enable_test_repositories($repos_count);
 
@@ -151,9 +157,9 @@ sub run {
         zypper_call("in -l -t patch $patch", exitcode => [0, 102, 103], log => "zypper_$patch.log", timeout => 1500);
 
         # Install binaries newly added by the incident
-        if (scalar @new_binaries) {
-            record_info 'New packages', "New packages: @new_binaries";
-            zypper_call("in -l @new_binaries", exitcode => [0, 102, 103], log => "new_$patch.log", timeout => 1500);
+        if (scalar @new_packages) {
+            record_info 'New pkgs', "New packages: @new_packages";
+            zypper_call("in -l @new_packages", exitcode => [0, 102, 103], log => "new_$patch.log", timeout => 1500);
         }
 
         if (is_s390x) {
