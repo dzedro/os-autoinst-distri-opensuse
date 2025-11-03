@@ -4,6 +4,7 @@ description:    >
     Maintainer: qe-core <qe-core@suse.de>
 schedule:
     - '{{agama}}'
+    - console/zypper_lr
     - console/system_prepare
     - console/hostname
     - console/force_scheduled_tasks
