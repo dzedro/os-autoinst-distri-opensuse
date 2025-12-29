@@ -18,4 +18,5 @@ conditional_schedule:
     ARCH:
       x86_64:
         - console/wpa_supplicant
+        - systemd_testsuite/prepare_systemd_and_testsuite
 ...
