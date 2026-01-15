@@ -39,6 +39,7 @@ my @conflicting_packages = (
     'nvidia-open-driver-G06-signed-cuda-kmp-default',
     'nvidia-open-driver-G06-signed-cuda-kmp-64kb',
     'nvidia-open-driver-G06-signed-cuda-default-devel',
+    'pipewire-spa-plugins-0_2-jack', 'pipewire-spa-plugins-0_2-jack-debuginfo',
 );
 
 # We may need to skip installing some packages based on test requirements
