@@ -413,7 +413,7 @@ sub load_boot_tests {
         loadtest "installation/data_integrity" if data_integrity_is_applicable;
         loadtest "installation/bootloader_uefi";
     }
-    elsif (is_s390x && is_jeos) {
+    elsif (is_s390x && is_jeos || is_ppc64le) {
         loadtest "installation/bootloader_start";
     }
     elsif (is_svirt_except_s390x()) {
