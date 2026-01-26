@@ -40,6 +40,7 @@ my @conflicting_packages = (
     'nvidia-open-driver-G06-signed-cuda-kmp-64kb',
     'nvidia-open-driver-G06-signed-cuda-default-devel',
     'cloud-netconfig-ec2', 'cloud-netconfig-gce', 'cloud-netconfig-azure',
+    'apache2-mod_php8', 'apache2-mod_php8-debuginfo', 'apache2-mod_php8-debugsource'
 );
 
 # We may need to skip installing some packages based on test requirements
