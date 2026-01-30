@@ -409,9 +409,14 @@ sub run {
             wait_still_screen 1;
             enter_cmd "echo 'PermitRootLogin yes' > /etc/ssh/sshd_config.d/root.conf";
             enter_cmd "systemctl restart sshd";
+            wait_still_screen 1, 2;
+            save_screenshot;
+            #record_info('ps', script_output('ps aux'));
         }
         send_key('ctrl-^-]');
+        wait_still_screen 6;
         $con->attach_to_running();
+        wait_still_screen 6;
     }
     select_console('root-console', skip_set_standard_prompt => 1, skip_setterm => 1, skip_disable_key_repeat => 1);
 
