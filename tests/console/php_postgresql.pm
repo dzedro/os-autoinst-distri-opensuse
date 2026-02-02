@@ -47,7 +47,7 @@ sub run {
     setup_apache2(mode => uc($php));
 
     # install requirements, all postgresql versions to test db upgrade if there are multiple versions
-    zypper_call 'in ' . $php . '-pgsql postgresql*-contrib sudo unzip';
+    zypper_call 'in ' . $php . '-pgsql postgresql17-contrib sudo unzip';
 
     # start postgresql service
     systemctl 'start postgresql';
