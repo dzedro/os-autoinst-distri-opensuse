@@ -37,6 +37,10 @@ sub run {
         assert_script_run 'update-ca-certificates -v';
     }
 
+
+    record_info('libzypp', 'Update libzypp');
+    trup_call('pkg install libzypp');
+    process_reboot(trigger => 1);
     update_system;
 
     # Clean the journal to avoid capturing bugs that are fixed after installing updates
