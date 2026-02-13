@@ -79,6 +79,7 @@ my @conflicting_packages = (
     'nfsidmap-devel',
     'libglfw3',
     'openvpn-dco',
+    'postgresql18-llvmjit-devel',
     # docker-stable cannot be used alongside docker. see docker-stable.spec
     'docker-stable', 'docker-stable-bash-completion', 'docker-stable-zsh-completion', 'docker-zsh-completion',
     'libica-openssl1_1-tools', 'libica-devel', 'libica-devel-static',
