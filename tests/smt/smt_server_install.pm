@@ -25,6 +25,9 @@ sub run {
     barrier_create('smt_registered', 2);
     barrier_create('smt_finished', 2);
 
+    assert_script_run("echo '/dev/vdb1 /srv/www/htdocs ext4 defaults 0 0' >> /etc/fstab");
+    assert_script_run('mount -a; mount|grep vdb');
+
     zypper_call 'in -t pattern smt';
 
     select_console 'root-console';
