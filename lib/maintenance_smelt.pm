@@ -53,7 +53,7 @@ sub get_packagebins_in_modules {
     # substitute LTSS-ES, channel name in smelt is all upper case
     # https://suse.slack.com/archives/C02CLB8TZP1/p1730783709126159
     foreach (@{$module_ref}) { $_ =~ s/12-SP5-LTSS-Extended-Security/12-SP5-LTSS-EXTENDED-SECURITY/ if is_sle('=12-sp5'); }
-    foreach (@{$module_ref}) { $_ =~ s/15-SP6-LTSS/15-SP5-LTSS/; }
+    foreach (@{$module_ref}) { $_ =~ s/15-SP6/15-SP7/; }
     my $response = Mojo::UserAgent->new->get("$smelt_url/api/v1/basic/maintained/$package_name/")->result->body;
     my $graph = JSON->new->utf8->decode($response);
     # Get the modules to which this package provides binaries.
