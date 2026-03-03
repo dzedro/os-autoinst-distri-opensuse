@@ -293,6 +293,10 @@ sub run {
     die "Parsing binaries from SMELT data failed" if not keys %bins;
 
     if (is_sle('=15-SP7') && grep(/SLES16-Migration/ || /SLES16-SAP_Migration/, @packages)) {
+        if (get_var('HDD_1') =~ /SLED/ || check_var('SLE_PRODUCT', 'sled')) {
+            record_info('not shipped', 'No Desktp on SLE16, SLES16-Migration notsupported');
+            return;
+        }
         set_var('SLES16_MIGRATION', 1);
         assert_script_run('rm -f /etc/zypp/repos.d/[sS][lL][eE]*');
         assert_script_run('zypper lr -u');
