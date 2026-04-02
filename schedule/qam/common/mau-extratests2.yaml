@@ -6,30 +6,7 @@ schedule:
   - boot/boot_to_desktop
   - console/prepare_test_data
   - console/consoletest_setup
-  - console/dnsmasq
-  - console/ca_certificates_mozilla
-  - console/unzip
-  - console/rsync
-  - console/shells
-  - console/sudo
-  - console/dstat
-  - x11/evolution/evolution_prepare_servers
-  - console/supportutils
-  - console/mdadm
-  - console/quota
-  - console/vhostmd
-  - console/rpcbind
-  - console/timezone
-  - console/procps
-  - console/iotop
-  - console/kmod
-  - console/suse_module_tools
-  - console/aaa_base
-  - console/gd
-  - console/vsftpd
-  - network/samba/samba_adcli
-  - console/pciutils
-  - '{{version_specific}}'
+  - console/zziplib
   - console/coredump_collect
 conditional_schedule:
   version_specific:
@@ -47,7 +24,6 @@ conditional_schedule:
         - console/firewalld
         - console/nginx
         - console/libgcrypt
-        - console/zziplib
         - console/journald_fss
         - console/valgrind
         - console/valkey
