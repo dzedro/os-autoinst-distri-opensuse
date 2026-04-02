@@ -170,18 +170,17 @@ fail on present unexpected coredump
 =cut
 
 sub cleanup_known_coredumps {
-    my %known_coredums = (
-        'poo#198596' => q(openssl3-conf\/base_only.cnf -p \$'hello')
+    my %known_coredumps = (
+        'poo#198596'  => q(openssl3-conf\/base_only.cnf -p \$'hello'),
+        'bsc#1129403' => q(unzip-mem  v files.zip)
     );
 
     for my $pid (split(/\n/, script_output(q(coredumpctl -q --no-pager --no-legend | awk '$9 == "present" { print $5 }')))) {
-        for my $known (keys %known_coredums) {
-            my $coredump_info = script_output("time coredumpctl info --no-pager $pid");
-            record_info('Dump found', $coredump_info);
-            if (script_output("echo \"$coredump_info\" | awk -F ': ' '/Command Line/ {print \$2}'") =~ /$known_coredums{$known}/) {
-                my $file = script_output("echo \"$coredump_info\" | awk '/Storage:/ {print \$2}'");
-                assert_script_run("rm -f $file");
-                record_info('Dump deleted', $file);
+        for my $known (keys %known_coredumps) {
+            my $coredump_info = script_output("time coredumpctl info --no-pager $pid", proceed_on_failure => 1);
+            if (script_output("echo \"$coredump_info\" | awk -F ': ' '/Command Line/ {print \$2}'") =~ /$known_coredumps{$known}/) {
+                record_info('Known dump', $coredump_info);
+                script_output("rm -vf \$(echo \"$coredump_info\" | awk '/Storage:/ {print \$2}')");
             }
         }
     }
