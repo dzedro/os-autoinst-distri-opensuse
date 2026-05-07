@@ -11,6 +11,7 @@ schedule:
 - installation/welcome
 - '{{disk_activation}}'
 - installation/scc_registration
+- '{{add_update_test_repo}}'
 - installation/addon_products_sle
 - installation/system_role
 - installation/partitioning
@@ -42,6 +43,10 @@ conditional_schedule:
     ARCH:
       s390x:
         - installation/disk_activation
+  add_update_test_repo:
+    VERSION:
+      12-SP3:
+        - installation/add_update_test_repo
   ext4:
     FILESYSTEM:
       ext4:

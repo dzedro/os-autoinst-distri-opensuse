@@ -18,7 +18,7 @@ sub run() {
         set_var('SKIP_INSTALLER_SCREEN', 0);
     }
 
-    if (!check_var('SCC_REGISTER', 'installation')) {
+    if (!check_var('SCC_REGISTER', 'installation') || !is_sle('=12-sp3')) {
         assert_screen('module-selection');
         send_key $cmd{next};
         assert_screen('addon-products');
