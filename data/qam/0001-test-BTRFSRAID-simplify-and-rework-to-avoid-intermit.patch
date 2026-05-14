@@ -1,0 +1,96 @@
+From 0ae97b45db528a5a46a13073bea955ff19dd4ff1 Mon Sep 17 00:00:00 2001
+From: Antonio Alvarez Feijoo <antonio.feijoo@suse.com>
+Date: Mon, 2 Mar 2026 11:56:33 +0100
+Subject: [PATCH] test(BTRFSRAID): simplify and rework to avoid intermittent
+ errors (bsc#1258960)
+
+This test was flaky, so it was completely reworked upstream. Adjusted using some
+code from the following commits:
+
+- https://github.com/dracut-ng/dracut-ng/commit/189399259901ebd7462c066a60c3d416f10d5dc7
+- https://github.com/dracut-ng/dracut-ng/commit/0f0c7784b888b3c84c8797414ebd018fd4824dae
+- https://github.com/dracut-ng/dracut-ng/commit/1dd12c3439e9a253b4398525882af242c7a71c55
+---
+ test/TEST-15-BTRFSRAID/create-root.sh | 12 ++----------
+ test/TEST-15-BTRFSRAID/test.sh        | 13 ++++---------
+ 2 files changed, 6 insertions(+), 19 deletions(-)
+
+diff --git a/test/TEST-15-BTRFSRAID/create-root.sh b/test/TEST-15-BTRFSRAID/create-root.sh
+index 79a9d0b37..42d592fb6 100755
+--- a/test/TEST-15-BTRFSRAID/create-root.sh
++++ b/test/TEST-15-BTRFSRAID/create-root.sh
+@@ -2,24 +2,16 @@
+ 
+ trap 'poweroff -f' EXIT
+ 
+-# don't let udev and this script step on eachother's toes
+-for x in 64-lvm.rules 70-mdadm.rules 99-mount-rules; do
+-    : > "/etc/udev/rules.d/$x"
+-done
+-modprobe btrfs || :
+-udevadm control --reload
+-udevadm settle
+-
+ set -e
+ 
+-mkfs.btrfs -draid10 -mraid10 -L root /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_raid[1234]
++mkfs.btrfs -draid0 -mraid0 -L root /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_raid[12]
+ udevadm settle
+ 
+ btrfs device scan
+ udevadm settle
+ 
+ mkdir -p /sysroot
+-mount -t btrfs /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_raid4 /sysroot
++mount -t btrfs /dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_raid1 /sysroot
+ cp -a -t /sysroot /source/*
+ umount /sysroot
+ 
+diff --git a/test/TEST-15-BTRFSRAID/test.sh b/test/TEST-15-BTRFSRAID/test.sh
+index f57f1a159..73ed59870 100755
+--- a/test/TEST-15-BTRFSRAID/test.sh
++++ b/test/TEST-15-BTRFSRAID/test.sh
+@@ -11,8 +11,6 @@ test_run() {
+     qemu_add_drive disk_index disk_args "$TESTDIR"/marker.img marker
+     qemu_add_drive disk_index disk_args "$TESTDIR"/raid-1.img raid1
+     qemu_add_drive disk_index disk_args "$TESTDIR"/raid-2.img raid2
+-    qemu_add_drive disk_index disk_args "$TESTDIR"/raid-3.img raid3
+-    qemu_add_drive disk_index disk_args "$TESTDIR"/raid-4.img raid4
+ 
+     test_marker_reset
+     "$testdir"/run-qemu \
+@@ -77,8 +75,7 @@ test_setup() {
+     # We do it this way so that we do not risk trashing the host mdraid
+     # devices, volume groups, encrypted partitions, etc.
+     "$basedir"/dracut.sh -l -i "$TESTDIR"/overlay / \
+-        -m "bash btrfs rootfs-block kernel-modules qemu" \
+-        -d "piix ide-gd_mod ata_piix btrfs sd_mod" \
++        -m "bash btrfs rootfs-block kernel-modules qemu mdraid" \
+         --nomdadmconf \
+         --no-hostonly-cmdline -N \
+         -f "$TESTDIR"/initramfs.makeroot "$KVERSION" || return 1
+@@ -92,8 +89,6 @@ test_setup() {
+     qemu_add_drive disk_index disk_args "$TESTDIR"/marker.img marker 1
+     qemu_add_drive disk_index disk_args "$TESTDIR"/raid-1.img raid1 1
+     qemu_add_drive disk_index disk_args "$TESTDIR"/raid-2.img raid2 1
+-    qemu_add_drive disk_index disk_args "$TESTDIR"/raid-3.img raid3 1
+-    qemu_add_drive disk_index disk_args "$TESTDIR"/raid-4.img raid4 1
+ 
+     "$testdir"/run-qemu \
+         "${disk_args[@]}" \
+@@ -112,9 +107,9 @@ test_setup() {
+         inst_hook emergency 000 ./hard-off.sh
+     )
+     "$basedir"/dracut.sh -l -i "$TESTDIR"/overlay / \
+-        -o "plymouth network kernel-network-modules" \
+-        -a "debug" \
+-        -d "piix ide-gd_mod ata_piix btrfs" \
++        -o "plymouth network kernel-network-modules multipath" \
++        -a "mdraid" \
++        --nofscks \
+         --no-hostonly-cmdline -N \
+         -f "$TESTDIR"/initramfs.testing "$KVERSION" || return 1
+ }
+-- 
+2.51.0
+

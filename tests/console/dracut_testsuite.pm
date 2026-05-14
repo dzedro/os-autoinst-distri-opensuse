@@ -37,6 +37,7 @@ sub run {
     my $version = script_output(q(rpm -q dracut|awk -F"[-.]" '{print$2}'|cut -c2-3));
     assert_script_run('mkdir /tmp/logs');
     assert_script_run('cd /usr/src/packages/SPECS');
+    assert_script_run('wget --quiet ' . data_url('qam/0001-test-BTRFSRAID-simplify-and-rework-to-avoid-intermit.patch') . ' -O /usr/src/packages/SPECS/patch.patch');
     assert_script_run('rpmbuild -bc dracut.spec');
     if ($dracut_test) {
         assert_script_run("cd -- \$(find /usr/src/packages/BUILD/ -type d -name $dracut_test) && ll");
