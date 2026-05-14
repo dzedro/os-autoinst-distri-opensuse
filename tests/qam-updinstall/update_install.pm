@@ -119,7 +119,7 @@ my @conflicting_packages_sle12 = ('apache2-prefork', 'apache2-doc', 'apache2-exa
 );
 
 # rpm-ndb can't be installed, it will remove rpm and break rpmdb2solv -> zypper
-my @blocked_packages = ('rpm-ndb', 'kernel-default-base');
+my @blocked_packages = ('rpm-ndb', 'kernel-default-base', 'postgresql16-devel', 'postgresql17-llvmjit-devel');
 
 sub get_patch {
     my ($incident_id, $repos) = @_;
