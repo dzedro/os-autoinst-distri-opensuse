@@ -66,7 +66,7 @@ sub get_utt_packages {
 sub handle_first_grub {
     enter_cmd "reboot";
     if (is_s390x || is_pvm) {
-        reconnect_mgmt_console(timeout => 500, grub_expected_twice => 1);
+        reconnect_mgmt_console(timeout => 500, grub_expected_twice => 1, grub_timeout => 500);
     }
     else {
         assert_screen 'grub2', 200;

@@ -1968,7 +1968,7 @@ sub reconnect_mgmt_console {
                 select_console('svirt');
                 save_svirt_pty;
                 if ($args{grub_expected_twice}) {
-                    wait_serial('Press enter to boot the selected OS') ||
+                    wait_serial('Press enter to boot the selected OS', $args{grub_timeout}) ||
                       diag 'Could not find boot selection, continuing nevertheless, trying to boot';
                     type_line_svirt '';
                 }
