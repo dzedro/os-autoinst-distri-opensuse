@@ -23,7 +23,7 @@ sub run {
 
     assert_script_run 'smt-repos -m';
     validate_script_output 'SUSEConnect --status', sub { m/"identifier":"SLES","version":"12\.5","arch":"x86_64","status":"Registered"/ };
-    validate_script_output 'smt-repos -o', sub { m/SLES12-SP5-Updates/ };
+    validate_script_output 'smt-repos -o', sub { m/SLE-Live-Patching12-SP5-Updates/ };
 
     barrier_wait 'smt_setup';
 

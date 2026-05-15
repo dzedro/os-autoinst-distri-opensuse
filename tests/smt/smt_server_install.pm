@@ -155,12 +155,12 @@ sub run {
 
     validate_script_output "SUSEConnect --status", sub { m/"identifier":"SLES","version":"12\.5","arch":"x86_64","status":"Registered"/ };
     assert_script_run "smt-repos -o";
-    validate_script_output "smt-repos -m SLES12-SP5-Updates", sub { m/SLES12-SP5-Updates/ }, timeout => 200;
+    validate_script_output "smt-repos -m SLE-Live-Patching12-SP5-Updates", sub { m/SLE-Live-Patching12-SP5-Updates/ }, timeout => 200;
 
-    assert_script_run "smt-repos -e SLES12-SP5-Updates sle-12-x86_64";
-    assert_script_run "smt-repos -e SLES12-SP5-Pool sle-12-x86_64";
-    validate_script_output "smt-repos -o", sub { m/SLES12-SP5-Updates/ };
-    validate_script_output "smt-repos -o", sub { m/SLES12-SP5-Pool/ };
+    assert_script_run "smt-repos -e SLE-Live-Patching12-SP5-Updates sle-12-x86_64";
+    assert_script_run "smt-repos -e SLE-Live-Patching12-SP5-Pool sle-12-x86_64";
+    validate_script_output "smt-repos -o", sub { m/SLE-Live-Patching12-SP5-Updates/ };
+    validate_script_output "smt-repos -o", sub { m/SLE-Live-Patching12-SP5-Pool/ };
 
     assert_script_run "smt-mirror", 10800;
 
