@@ -187,7 +187,6 @@ sub cleanup_known_coredumps {
                 record_info('Known dump', $coredump_info);
                 my ($coredump) = $coredump_info =~ /^\s+Storage: (.+?) \(present\)$/m;
                 script_output("rm -vf $coredump");
-                last;
             }
         }
     }
