@@ -49,15 +49,16 @@ sub run {
         assert_script_run("make", timeout => 300);
         assert_script_run("make clean -C tests");
         assert_script_run("make -C tests");
-        validate_script_output("./tests/run_tests.sh --test test_cpu_selection", sub { m/Test PASSED/ }, timeout => 120, proceed_on_failure => 1);
+        validate_script_output("./tests/run_tests.sh --functional-only", sub { m/Test PASSED/ }, timeout => 400);
+        sleep 180;
     }
 }
 
 sub cleanup {
     # Cleanup
     my $pkg = "stalld";
-    zypper_call("rm -y $pkg");
-    assert_script_run("test ! -d /tmp/stalld-src || rm -rf /tmp/stalld-src");
+    zypper_call("rm $pkg");
+    assert_script_run("rm -rf /tmp/stalld-src");
 }
 
 sub post_run_hook {

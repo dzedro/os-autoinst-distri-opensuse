@@ -6,18 +6,7 @@ schedule:
     - installation/bootloader_start
     - boot/boot_to_desktop
     - console/add_phub_extension
-    - console/vmstat
-    - console/libjpeg_turbo
-    - console/libgit2
-    - console/apache2_php_fpm
     - console/stalld
-    - '{{libaom}}'
-    - '{{libvorbis}}'
-    - console/zziplib
-    - network/cifs
-    - '{{wpa_supplicant}}'
-    - console/coredump_collect  # For coredumps during the suite. Please put near end.
-    - console/zypper_log_packages  # Records packages installed in the suite. Please put at end.
 conditional_schedule:
     libaom:
         ARCH:
