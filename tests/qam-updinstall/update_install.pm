@@ -185,7 +185,10 @@ sub sle12_zypp_resolve {
 sub reboot_and_login {
     my @packages = @_;
     prepare_system_shutdown;
-    if (is_sle('=15-SP7') && grep(/SLES16-Migration/ || /SLES16-SAP_Migration/, @packages)) {
+    if (grep(/SLES16-Migration/ || /SLES16-SAP_Migration/, @packages)) {
+        my $version = get_required_var('VERSION') =~ s/([0-9]+)-SP([0-9]+)/$1.$2/r;
+        my $arch = get_required_var('ARCH');
+        assert_script_run("SUSEConnect -d -p SLES-LTSS/$version/$arch") if get_var('SCC_REGCODE_LTSS', '');
         select_console('root-console');
         # https://bugzilla.suse.com/show_bug.cgi?id=1249091
         enter_cmd('/usr/sbin/run_migration');
@@ -292,7 +295,7 @@ sub run {
     }
     die "Parsing binaries from SMELT data failed" if not keys %bins;
 
-    if (is_sle('=15-SP7') && grep(/SLES16-Migration/ || /SLES16-SAP_Migration/, @packages)) {
+    if (grep(/SLES16-Migration/ || /SLES16-SAP_Migration/, @packages)) {
         if (get_var('HDD_1') =~ /SLED/ || check_var('SLE_PRODUCT', 'sled')) {
             record_info('not shipped', 'No Desktp on SLE16, SLES16-Migration notsupported');
             return;
@@ -301,6 +304,7 @@ sub run {
         assert_script_run('rm -f /etc/zypp/repos.d/[sS][lL][eE]*');
         assert_script_run('zypper lr -u');
         register_product;
+        add_suseconnect_product("SLES-LTSS", undef, undef, "-r " . get_var("SCC_REGCODE_LTSS"), 300, 0) if get_var('SCC_REGCODE_LTSS', '');
         if (get_var('FLAVOR') =~ /-(HA)-/) {
             my $scc_regcode_ha = get_var('SCC_REGCODE_HA');
             add_suseconnect_product('sle-ha', undef, undef, "-r $scc_regcode_ha");
@@ -324,7 +328,7 @@ sub run {
         # https://progress.opensuse.org/issues/131534
         next if $patch !~ /TERADATA/ && get_var('FLAVOR') =~ /TERADATA/;
         # https://progress.opensuse.org/issues/189183
-        next if $patch =~ /Basesystem-15-SP7/ && get_var('FLAVOR') =~ /-SAP-/ && grep(/SLES16-Migration/, @packages);
+        next if $patch =~ /Basesystem-15-SP*/ && get_var('FLAVOR') =~ /-SAP-/ && grep(/SLES16-Migration/, @packages);
 
         # Check if the patch was correctly configured.
         # Get info about the patch included in the update.
@@ -491,7 +495,7 @@ sub run {
                 zypper_call("in -l $solver_focus $_", exitcode => [0, 102, 103], log => "new_${_}_conflicts.log", timeout => 1500);
             }
         }
-        zypper_call("in suse-migration-sle16-activation", exitcode => [0, 102, 103], timeout => 1500) if is_sle('=15-SP7') && grep(/SLES16-SAP_Migration/, @packages) && !is_s390x;
+        zypper_call("in suse-migration-sle16-activation", exitcode => [0, 102, 103], timeout => 1500) if grep(/SLES16-SAP_Migration/, @packages) && !is_s390x;
 
         if (is_s390x) {
             # Make sure that openssh-server-config-disallow-rootlogin is not installed
