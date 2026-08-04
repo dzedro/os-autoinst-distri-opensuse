@@ -185,17 +185,37 @@ sub sle12_zypp_resolve {
 sub reboot_and_login {
     my @packages = @_;
     prepare_system_shutdown;
+    assert_script_run('echo "PermitRootLogin yes" >/etc/ssh/sshd_config.d/50-permit-root-login.conf') if is_s390x;
     if (grep(/SLES16-Migration/ || /SLES16-SAP_Migration/, @packages)) {
         my $version = get_required_var('VERSION') =~ s/([0-9]+)-SP([0-9]+)/$1.$2/r;
         my $arch = get_required_var('ARCH');
+        if (is_s390x) {
+            # paused and manually installed opnessh-server-config-rootlogin via virsh console on SUT
+            # https://suse.slack.com/archives/C02CLB8TZP1/p1763144536375889?thread_ts=1762413923.381709&cid=C02CLB8TZP1
+            my $root_login = <<"EOF";
+[Unit]
+Description=Enable root login on SLES16
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/bash -c 'mkdir -p /etc/ssh/sshd_config.d && echo "PermitRootLogin yes" > /etc/ssh/sshd_config.d/rootlogin.conf && systemctl reload sshd'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+            script_output("echo \"$root_login\" >/etc/systemd/system/root-login.service");
+            assert_script_run('cat /etc/systemd/system/root-login.service');
+            assert_script_run('systemctl cat root-login.service');
+            assert_script_run('systemctl enable root-login.service');
+        }
         assert_script_run("SUSEConnect -d -p SLES-LTSS/$version/$arch") if get_var('SCC_REGCODE_LTSS', '');
         select_console('root-console');
         # https://bugzilla.suse.com/show_bug.cgi?id=1249091
         enter_cmd('/usr/sbin/run_migration');
         if (is_s390x) {
-            # paused and manually installed opnessh-server-config-rootlogin via virsh console on SUT
-            # https://suse.slack.com/archives/C02CLB8TZP1/p1763144536375889?thread_ts=1762413923.381709&cid=C02CLB8TZP1
-            sleep 300;
+            sleep 1200;
         }
         else {
             assert_screen('SLES16-Migration', 2000);
