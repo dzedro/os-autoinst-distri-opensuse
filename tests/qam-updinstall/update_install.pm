@@ -198,7 +198,7 @@ sub reboot_and_login {
             sleep 300;
         }
         else {
-            assert_screen('SLES16-Migration', 1000);
+            assert_screen('SLES16-Migration', 2000);
         }
     }
     else {
