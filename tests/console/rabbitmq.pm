@@ -16,7 +16,7 @@ use serial_terminal qw(select_serial_terminal);
 
 sub run {
     select_serial_terminal;
-    install_package('rabbitmq-server go curl', trup_reboot => 1);
+    install_package('rabbitmq-server313 go curl', trup_reboot => 1);
     systemctl 'start rabbitmq-server';
     systemctl 'status rabbitmq-server';
     my $curl_opts = "--retry 1 --retry-max-time 60 -D - -O";
