@@ -247,6 +247,9 @@ sub run {
     my $repos_count = add_test_repositories;
     record_info('Repos', script_output('zypper lr -u'));
 
+    sle12_zypp_resolve("zypper -v in -l postgresql17-llvmjit", undef, 2);
+    sle12_zypp_resolve("zypper -v in -l postgresql17-llvmjit-devel", undef, 2);
+
     record_info 'Snapshot created', 'Snapshot for rollback' if is_sle('12-sp3+');
     $rollback_number = script_output('snapper create --description "Pre-patch" -p') if is_sle('12-sp3+');
 
@@ -399,6 +402,8 @@ sub run {
                 sle12_zypp_resolve("zypper -v in -l $packages", "prepare_$patch.log", get_var('UPDATE_RESOLVE_SOLUTION_PREINSTALL', 1));
             }
         }
+        sle12_zypp_resolve("zypper -v in -l postgresql17-llvmjit", undef, 2);
+        sle12_zypp_resolve("zypper -v in -l postgresql17-llvmjit-devel", undef, 2);
 
         enable_test_repositories($repos_count);
 
