@@ -52,8 +52,9 @@ my @conflicting_packages = (
 push(@conflicting_packages, (
         'nv-prefer-signed-open-driver',
         'nvidia-open-driver-G06-signed-64kb-devel',
-        'nvidia-open-driver-G06-signed-cuda-kmp-64kb',
         'nvidia-open-driver-G07-signed-64kb-devel',
+        'nvidia-open-driver-G06-signed-cuda-kmp-64kb',
+        'nvidia-open-driver-G07-signed-cuda-kmp-64kb'
 )) if is_aarch64;
 
 # We may need to skip installing some packages based on test requirements
