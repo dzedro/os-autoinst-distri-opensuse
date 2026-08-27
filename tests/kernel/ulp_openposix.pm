@@ -137,6 +137,16 @@ sub run {
         validate_script_output('cat /etc/ld.so.conf', sub { $_ !~ m/$ld_conf_regex/ });
     }
 
+    my $glibc_files = script_output("rpm -q --list glibc | grep -E '\\.so(\\.[0-9]+)*\$'", proceed_on_failure => 1);
+    my @so_files = grep { length } split(/\n/, $glibc_files);
+
+    if (@so_files) {
+        record_info('ulp glibc', sprintf('Checking %d .so file(s) for glibc', scalar @so_files));
+        script_run("ulp livepatchable $_") for @so_files;
+    } else {
+        record_info('ulp glibc', 'No .so files found in glibc package', result => 'fail');
+    }
+
     schedule_tests('openposix', "_glibc-$libver");
     loadtest_kernel('ulp_threads', name => "ulp_threads_glibc-$libver",
         run_args => $tinfo);

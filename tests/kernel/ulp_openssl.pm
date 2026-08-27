@@ -95,6 +95,21 @@ sub run {
     push @downgrade_list, "openssl-3=$target_ver";
     install_package("--oldpackage " . join(' ', @downgrade_list), trup_continue => 1, trup_reboot => 1);
 
+    my $pkgs = script_output("rpm -qa 'libopenssl*'", proceed_on_failure => 1);
+    my @so_files;
+
+    if ($pkgs =~ /\S/) {
+        my $out = script_output("rpm -q --list $pkgs | grep -E '\\.so(\\.[0-9]+)*\$'", proceed_on_failure => 1);
+        @so_files = grep { length } split(/\n/, $out);
+    }
+
+    if (@so_files) {
+        record_info('ulp openssl', sprintf('Checking %d .so file(s) for libopenssl', scalar @so_files));
+        script_run("ulp livepatchable $_") for @so_files;
+    } else {
+        record_info('ulp openssl', 'No .so files found for libopenssl packages', result => 'fail');
+    }
+
     # Start `openssl s_server` in the background. It's a long-running process that links with libssl/libcrypto.
     my $server_pid = background_script_run("openssl s_server -cert cert.pem -key key.pem -pass pass:password -accept 44330 -www");
     record_info('Workload', "Started openssl s_server with PID $server_pid");
