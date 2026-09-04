@@ -63,11 +63,11 @@ sub run {
 
     # until is 128 version on all versions
     send_key 'alt-tab';
-    wait_still_screen 1;
+    wait_still_screen 1, 2;
     my $version = script_output q(firefox --version|awk -F "[ .]" '{print $3}');
     my $key = ($version >= 128) ? 'd' : 'l';
     send_key 'alt-tab';
-    wait_still_screen 1;
+    wait_still_screen 1, 2;
 
     $self->firefox_preferences;
     assert_and_click('firefox-passwd-security');
@@ -86,7 +86,7 @@ sub run {
     type_string $masterpw, 150;
     send_key "tab";
     type_string $masterpw, 150;
-    wait_still_screen 2, 4;
+    wait_still_screen 1, 2;
     send_key 'ret';
     assert_and_click('firefox-passwd-success');
 
@@ -99,7 +99,7 @@ sub run {
     send_key "tab";
     type_string "calamari";
     assert_and_click('firefox-passwd-login');
-    wait_still_screen(2);
+    wait_still_screen 1, 2;
     assert_and_click('firefox-passwd-confirm_remember');
     confirm_master_pw;
     $self->firefox_open_url($mozlogin, assert_loaded_url => 'firefox-passwd-auto_filled');
@@ -108,11 +108,11 @@ sub run {
     assert_and_click('firefox-passwd-security');
     if ($version >= 128) {
         # jump to logins, alt-shift-d does not rotate between multiple places :(
-        wait_still_screen(3);
+        wait_still_screen 1, 2;
         send_key 'alt-shift-f';
     }
     send_key_until_needlematch 'firefox-saved-logins-button', "alt-shift-$key", 6, 2;
-    wait_still_screen 1;
+    wait_still_screen 1, 2;
     if ($version >= 153) {
         assert_and_click('firefox-saved-logins-button');
     }
@@ -121,7 +121,7 @@ sub run {
     }
     assert_screen('firefox-passwd-saved');
     assert_and_click('firefox-saved-logins-remove');
-    wait_still_screen 1;
+    wait_still_screen 1, 2;
     send_key 'spc';
     send_key_until_needlematch('firefox-passwd-auto_filled', 'ctrl-tab', 4, 2);
     send_key 'f5';
