@@ -71,9 +71,15 @@ sub run {
 
     $self->firefox_preferences;
     assert_and_click('firefox-passwd-security');
-    send_key_until_needlematch([qw(firefox-primary-passwd-selected firefox-passwd-master_setting)], 'alt-shift-u', 4, 2);
-    if (check_screen('firefox-passwd-master_setting', 3)) {
+    if ($version >= 153) {
+        send_key 'alt-shift-s';
         assert_and_click('firefox-passwd-master_setting');
+    }
+    else {
+        send_key_until_needlematch([qw(firefox-primary-passwd-selected firefox-passwd-master_setting)], 'alt-shift-u', 4, 2);
+        if (check_screen('firefox-passwd-master_setting', 3)) {
+            assert_and_click('firefox-passwd-master_setting');
+        }
     }
     assert_and_click("firefox-enter-new-password");
     # We should use strong password due to bsc#1208951
@@ -106,8 +112,13 @@ sub run {
         send_key 'alt-shift-f';
     }
     send_key_until_needlematch 'firefox-saved-logins-button', "alt-shift-$key", 6, 2;
-    wait_still_screen 3;
-    send_key 'spc';
+    wait_still_screen 1;
+    if ($version >= 153) {
+        assert_and_click('firefox-saved-logins-button');
+    }
+    else {
+        send_key 'spc';
+    }
     assert_screen('firefox-passwd-saved');
     assert_and_click('firefox-saved-logins-remove');
     wait_still_screen 1;
