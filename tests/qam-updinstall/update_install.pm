@@ -211,6 +211,14 @@ sub run {
         zypper_call("rr sle-module-packagehub-subpackages:${version}::pool sle-module-packagehub-subpackages:${version}::update");
     }
 
+
+    my $version = get_var('VERSION');
+    my $arch = get_var('ARCH');
+    zypper_ar("http://dist.suse.de/ibs/SUSE/Products/SLE-Module-HPC/$version/$arch/product/",
+        name => "sle-module-HPC:${version}::pool");
+    zypper_ar("http://dist.suse.de/ibs/SUSE/Updates/SLE-Module-HPC/$version/$arch/update/",
+        name => "sle-module-HPC:${version}::update");
+
     # Enable PackageHub repos in case dependent packages are required.
     # Note: avoid enabling by default as it may introduce new dependency issues,
     # especially when LTSS repos are present.
