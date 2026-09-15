@@ -45,6 +45,8 @@ sub run_tests ($python3_spec_release) {
         return;
     }
 
+    # https://bugzilla.suse.com/show_bug.cgi?id=1272666
+    install_package("$python3_spec_release-pycairo", trup_reboot => 1) if (script_run("rpm -q $python3_spec_release-pycairo") && is_sle('16+'));
     install_package("$python3_spec_release $python3_spec_release-setuptools", trup_reboot => 1) if (script_run("rpm -q $python3_spec_release $python3_spec_release-setuptools"));
     foreach my $env ('no_pip', 'pip') {
         # Import the project directory for creating a source distribution package.
