@@ -60,7 +60,7 @@ sub tb_setup_account {
         send_key_until_needlematch('thunderbird_configure_manually', 'tab', 4, 1);
         send_key 'spc';    # configure manually
         wait_still_screen(2, 4);
-        assert_and_click 'thunderbird_know-your-rights';
+        assert_and_click 'thunderbird_know-your-rights' if check_screen('thunderbird_know-your-rights', 5);
     }
     else {
         send_key "alt-n";
