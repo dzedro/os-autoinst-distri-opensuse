@@ -85,7 +85,7 @@ schedule:
     - console/rsync
     - console/rust
     - console/shells
-    - console/oqa_agnostic/sudo_agnostic
+    - console/sudo
     - x11/evolution/evolution_prepare_servers
     - console/mutt
     - console/pciutils

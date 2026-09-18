@@ -11,7 +11,7 @@ schedule:
   - console/unzip
   - console/rsync
   - console/shells
-  - console/oqa_agnostic/sudo_agnostic
+  - console/sudo
   - console/dstat
   - x11/evolution/evolution_prepare_servers
   - console/supportutils

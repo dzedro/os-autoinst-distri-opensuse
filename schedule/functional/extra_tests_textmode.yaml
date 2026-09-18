@@ -176,7 +176,7 @@ schedule:
     - console/rsync
     - console/rust
     - console/shells
-    - console/oqa_agnostic/sudo_agnostic
+    - console/sudo
     - console/run0
     - console/dstat
     - x11/evolution/evolution_prepare_servers
