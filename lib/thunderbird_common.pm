@@ -74,6 +74,15 @@ sub tb_setup_account {
     else {
         assert_screen 'thunderbird-imap-selected';
     }
+    assert_and_click 'thunderbird-continue';
+    wait_still_screen(1, 2);
+    type_string "$mail_passwd";
+    send_key 'ret';
+    wait_still_screen(1, 2);
+    assert_and_click 'thunderbird_confirm_security_exception';
+    assert_and_click 'thunderbird_skip-system-integration';
+    assert_and_click 'thunderbird_know-your-rights';
+    assert_and_click 'thunderbird_get-messages';
 
     # If use multimachine, select correct needles to configure thunderbird.
     if ($hostname eq 'client') {
