@@ -45,37 +45,22 @@ sub tb_setup_account {
     my $new_gui = 0;
 
     # wait for tab to appear and close tabs like donation or privacy notice until account setup tab is in focus
-    wait_still_screen(2);
-    send_key_until_needlematch('thunderbird-new-gui', 'ctrl-w', 4, 1);
+    #wait_still_screen(2);
+    #send_key_until_needlematch('thunderbird-new-gui', 'ctrl-w', 4, 1);
 
-    if (check_screen 'thunderbird-new-gui') {
-        $new_gui = 1;
-        wait_still_screen(2, 4);
-        type_string "SUSE Test";
-        send_key 'tab';
-        wait_screen_change { type_string "$mail_box" };
-        send_key 'tab';
-        wait_screen_change { type_string "$mail_passwd" };
-        wait_still_screen(2, 4);
-        assert_and_click 'thunderbird_know-your-rights' if check_screen('thunderbird_know-your-rights', 5);
-    }
-    else {
-        send_key "alt-n";
-        wait_still_screen(2, 4);
-        type_string "SUSE Test";
-        send_key "alt-e";
-        wait_screen_change { type_string "$mail_box" };
-        send_key "alt-p";
-        wait_screen_change { type_string "$mail_passwd" };
-        send_key "alt-c";
-    }
+    assert_screen 'thunderbird';
+    wait_still_screen(1, 2);
+    type_string 'SUSE Test';
+    send_key 'tab';
+    type_string "$mail_box";
+    send_key 'tab';
+    type_string "$mail_passwd";
+    wait_still_screen(1, 2);
+    assert_and_click 'thunderbird-continue';
 
     if ($proto eq 'pop') {
         # make sure imap icon is on top of the page
-        if (!check_screen 'thunderbird_wizard-imap-selected', 3) {
-            send_key_until_needlematch('thunderbird_wizard_imap_on_top', 'tab');
-        }
-        assert_and_click 'thunderbird_wizard-imap-selected';
+        assert_and_click 'thunderbird-select-pop';
         # If use multimachine, select correct needles to configure thunderbird.
         if ($hostname eq 'client') {
             $self->server_hostname_workaround;
@@ -86,96 +71,36 @@ sub tb_setup_account {
         }
         assert_screen "thunderbird_wizard-$proto-selected";
     }
-
-    if ($new_gui) {
-        # If use multimachine, select correct needles to configure thunderbird.
-        if ($hostname eq 'client') {
-            $self->server_hostname_workaround;
-            if (check_screen 'thunderbird_username', 2) {
-                record_info 'bsc#1191853';
-                assert_and_click 'thunderbird_username';
-                send_key 'ctrl-a';
-                type_string 'admin';
-            }
-            send_key_until_needlematch 'thunderbird_wizard-retest', 'tab';
-            assert_and_click 'thunderbird_wizard-retest';
-            send_key_until_needlematch 'thunderbird_wizard-done', 'tab', 16, 1;
-            assert_and_click 'thunderbird_wizard-done';
-            wait_still_screen(2, 4);
-            assert_and_click 'thunderbird_I-understand-the-risks';
-            assert_and_click 'thunderbird_I-understand-the-risks-confirm';
-            my $count = 1;
-            while (1) {
-                die 'Repeating on security_exception too much' if $count++ == 5;
-                click_lastmatch if check_screen('thunderbird_confirm_security_exception', 2);
-                wait_still_screen(2, 4);
-                last if check_screen('thunderbird_finish');
-            }
-            assert_and_click 'thunderbird_finish';
-            assert_and_click "thunderbird_skip-system-integration";
-            assert_and_click "thunderbird_get-messages";
-        }
-        else {
-            # get to the end of configutration options
-            for (1 .. 17) { send_key 'tab' }
-            assert_and_click 'thunderbird_startssl-selected-for-imap';
-            wait_still_screen(1);
-            assert_and_click 'thunderbird_security-select-none';
-            wait_still_screen(1);
-            assert_and_click 'thunderbird_startssl-selected-for-smtp';
-            wait_still_screen(1);
-            assert_and_click 'thunderbird_security-select-none';
-            if (check_screen 'thunderbird_username', 2) {
-                record_info 'bsc#1191853';
-                assert_and_click 'thunderbird_username';
-                send_key 'ctrl-a';
-                type_string 'admin';
-            }
-            send_key_until_needlematch 'thunderbird_wizard-retest', 'tab';
-            assert_and_click 'thunderbird_wizard-retest';
-            send_key_until_needlematch 'thunderbird_wizard-done', 'tab', 16, 1;
-            assert_and_click 'thunderbird_wizard-done';
-            wait_still_screen(2);
-            send_key 'end';    # go to the bottom to see whole button and checkbox
-            wait_still_screen(2);
-            assert_and_click 'thunderbird_I-understand-the-risks';
-            assert_and_click 'thunderbird_I-understand-the-risks-confirm';
-            wait_still_screen(2);
-            assert_and_click 'thunderbird_finish';
-            # skip additional integrations
-            assert_and_click "thunderbird_skip-system-integration" if check_screen 'thunderbird_skip-system-integration', 10;
-            assert_and_click "thunderbird_select-inbox";
-            assert_and_click "thunderbird_get-messages";
-        }
-    }
     else {
-        # If use multimachine, select correct needles to configure thunderbird.
-        if ($hostname eq 'client') {
-            send_key_until_needlematch 'thunderbird_SSL_done_config', 'alt-t', 5, 2;
-            wait_still_screen(2);
-            assert_and_click "thunderbird_SSL_done_config";
-            wait_still_screen(3);
-            assert_and_click 'thunderbird_SSL_done_config' unless check_screen('thunderbird_confirm_security_exception');
-            assert_and_click "thunderbird_confirm_security_exception";
-            assert_and_click "thunderbird_skip-system-integration";
-            assert_and_click "thunderbird_get-messages";
+        assert_screen 'thunderbird-imap-selected';
+    }
+
+    # If use multimachine, select correct needles to configure thunderbird.
+    if ($hostname eq 'client') {
+        $self->server_hostname_workaround;
+        if (check_screen 'thunderbird_username', 2) {
+            record_info 'bsc#1191853';
+            assert_and_click 'thunderbird_username';
+            send_key 'ctrl-a';
+            type_string 'admin';
         }
-        else {
-            assert_and_click 'thunderbird_startssl-selected-for-imap';
-            wait_still_screen(1);
-            assert_and_click 'thunderbird_security-select-none';
-            wait_still_screen(1);
-            assert_and_click 'thunderbird_startssl-selected-for-smtp';
-            wait_still_screen(1);
-            assert_and_click 'thunderbird_security-select-none';
-            assert_and_click 'thunderbird_wizard-retest';
-            assert_and_click 'thunderbird_wizard-done';
-            assert_and_click 'thunderbird_I-understand-the-risks';
-            assert_and_click 'thunderbird_risks-done';
-            # skip additional integrations
-            assert_and_click "thunderbird_skip-system-integration";
-            assert_and_click "thunderbird_get-messages";
+        send_key_until_needlematch 'thunderbird_wizard-retest', 'tab';
+        assert_and_click 'thunderbird_wizard-retest';
+        send_key_until_needlematch 'thunderbird_wizard-done', 'tab', 16, 1;
+        assert_and_click 'thunderbird_wizard-done';
+        wait_still_screen(1, 2);
+        assert_and_click 'thunderbird_I-understand-the-risks';
+        assert_and_click 'thunderbird_I-understand-the-risks-confirm';
+        my $count = 1;
+        while (1) {
+            die 'Repeating on security_exception too much' if $count++ == 5;
+            click_lastmatch if check_screen('thunderbird_confirm_security_exception', 2);
+            wait_still_screen(1, 2);
+            last if check_screen('thunderbird_finish');
         }
+        assert_and_click 'thunderbird_finish';
+        assert_and_click "thunderbird_skip-system-integration";
+        assert_and_click "thunderbird_get-messages";
     }
 }
 
