@@ -57,9 +57,6 @@ sub tb_setup_account {
         send_key 'tab';
         wait_screen_change { type_string "$mail_passwd" };
         wait_still_screen(2, 4);
-        send_key_until_needlematch('thunderbird_configure_manually', 'tab', 4, 1);
-        send_key 'spc';    # configure manually
-        wait_still_screen(2, 4);
         assert_and_click 'thunderbird_know-your-rights' if check_screen('thunderbird_know-your-rights', 5);
     }
     else {
@@ -79,23 +76,15 @@ sub tb_setup_account {
             send_key_until_needlematch('thunderbird_wizard_imap_on_top', 'tab');
         }
         assert_and_click 'thunderbird_wizard-imap-selected';
-        assert_and_click 'thunderbird_wizard-imap-pop-open';
-        if (is_tumbleweed) {
-            assert_and_click 'thunderbird_SSL_pop3-selection-click-TW';
+        # If use multimachine, select correct needles to configure thunderbird.
+        if ($hostname eq 'client') {
+            $self->server_hostname_workaround;
             assert_and_click 'thunderbird_SSL_auth_click';
-            assert_and_click 'thunderbird_wizard-pop-done';
+            wait_still_screen(2);
+            send_key 'down';
+            send_key 'ret';
         }
-        else {
-            # If use multimachine, select correct needles to configure thunderbird.
-            if ($hostname eq 'client') {
-                $self->server_hostname_workaround;
-                assert_and_click 'thunderbird_SSL_auth_click';
-                wait_still_screen(2);
-                send_key 'down';
-                send_key 'ret';
-            }
-            assert_screen "thunderbird_wizard-$proto-selected";
-        }
+        assert_screen "thunderbird_wizard-$proto-selected";
     }
 
     if ($new_gui) {
