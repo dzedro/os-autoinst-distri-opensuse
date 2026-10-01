@@ -99,6 +99,8 @@ my @conflicting_packages = (
     'nvidia-open-driver-G07-signed-cuda-default-devel',
     'kernel-default-base', 'kernel-default-extra',
     'patterns-base-fips-certified',
+    'tomcat', 'tomcat-admin-webapps', 'tomcat-el-3_0-api', 'tomcat-jsp', 'tomcat-jsp-2_3-api',
+    'tomcat-lib', 'tomcat-servlet-4_0-api', 'tomcat-webapps',
     'gnu-compilers-hpc-macros-devel', 'gnu12-compilers-hpc-macros-devel',
     'openssl-ibmca-engine', 'openssl-ibmca-provider', 'openssl-ibmca',
     'openmpi3-config', 'openmpi2-config'
