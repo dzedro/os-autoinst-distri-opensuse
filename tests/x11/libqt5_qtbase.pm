@@ -9,7 +9,7 @@
 # - Create default UI elements, run design preview
 # - Open Yast2 release notes (that uses Qt)
 # - Compile and launch an app - tests qmake, QtNetwork features etc
-# Maintainer: Timo Jyrinki <tjyrinki@suse.de>
+# Maintainer: QE Core <qe-core@suse.com>
 
 use Mojo::Base 'x11test';
 use testapi;
@@ -26,6 +26,7 @@ sub run {
         select_serial_terminal;
         # Activating development-tools module to install libqt5-qttools package
         add_suseconnect_product("sle-module-development-tools");
+        assert_script_run 'echo "%product_libs_gcc_ver 15" >> ~/.rpmmacros';
     }
 
     select_console('x11');
