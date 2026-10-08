@@ -9,6 +9,8 @@ schedule:
   - console/system_prepare
   - console/post_installation
   - console/hostname
+  - autoyast/console
+  - autoyast/clone
   - console/force_scheduled_tasks
   - shutdown/grub_set_bootargs
   - shutdown/cleanup_before_shutdown
