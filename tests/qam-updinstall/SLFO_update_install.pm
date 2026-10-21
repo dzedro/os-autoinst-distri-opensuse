@@ -100,6 +100,11 @@ sub run {
     my $repos_count = add_test_repositories;
     record_info('Repos', script_output('zypper lr -u'));
 
+    # when existing package has broken dependecies, install it with broken dep so patch can continue
+    my $pkg = get_var('PREINSTALL_BREAK_DEP');
+    zypper_call("download $pkg");
+    assert_script_run("rpm -ivh --nodeps /var/cache/zypp/packages/*/*/$pkg*.rpm");
+
     record_info 'Snapshot created', 'Snapshot for rollback';
     $rollback_number = script_output('snapper create --description "Pre-patch" -p');
 
