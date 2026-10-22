@@ -4,6 +4,7 @@ local urls = std.split(repo, ',');
   product: {
     id: '{{AGAMA_PRODUCT_ID}}',
     registrationCode: '{{SCC_REGCODE}}',
+    mode: 'standard',
     addons: [
       {
         id: 'PackageHub',
