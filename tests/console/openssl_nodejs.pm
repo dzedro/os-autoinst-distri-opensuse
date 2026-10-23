@@ -51,7 +51,7 @@ sub run {
 }
 
 sub post_run_hook {
-    zypper_call('rr TEST_0_Source');
+    zypper_call('rr TEST_\d+_Source');
 }
 
 1;
