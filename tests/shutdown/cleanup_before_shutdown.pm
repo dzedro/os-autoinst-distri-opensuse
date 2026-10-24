@@ -81,6 +81,12 @@ END_SCRIPT
 
     # Clean-up Mesa shader cache on aarch64 to avoid SIGILL (FP16 instructions can be used on older hardware)
     assert_script_run("rm -rf ~$testapi::username/.cache/*mesa*") if is_aarch64;
+
+    # https://progress.opensuse.org/issues/209127
+    if (script_run('zypper se -t pattern -i immutable_base') == 0) {
+        record_soft_failure('bsc#1234567');  # bug in progress, debugging
+        zypper_call('rm -t pattern immutable_base');
+    }
 }
 
 sub post_fail_hook {
