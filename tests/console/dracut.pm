@@ -18,6 +18,7 @@ sub run {
     select_serial_terminal;
 
     assert_script_run("rpm -q dracut");
+    assert_script_run('grep GRUB_CMDLINE_LINUX /etc/default/grub');
 
     validate_script_output("lsinitrd", sub { m/Image:(.*\n)+( ?)Version: dracut(-|\d+|\.|\+|\w+)+(\n( ?))+( ?)Arguments(.*\n)+( ?)dracut modules:(\w+|-|\d+|\n|( ?))+\=+\n(l|d|r|w|x|-|( ?))+\s+\d+ root\s+root(.*\n)+( ?)\=+/ });
     assert_script_run("dracut -f", 180);
