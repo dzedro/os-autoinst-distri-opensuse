@@ -169,6 +169,7 @@ sub run {
         if (grep { /\S/ } @patch_conflicts) {
             zypper_call("--ignore-unknown in -l --force-resolution --solver-focus Update @patch_conflicts", exitcode => [0, 102, 103, 104], log => "prepare_$patch.log", timeout => 1500, tmpfs => 1);
             record_soft_failure "poo#1234 Preinstalled package is missing, check log prepare_${patch}." if (script_run("grep 'not found in package names' /var/tmp/prepare_${patch}.log") == 0);
+            reboot_and_login;
         }
         enable_test_repositories($repos_count);
 
