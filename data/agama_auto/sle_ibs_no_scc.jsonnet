@@ -21,8 +21,12 @@ local is_immutable = '{{IMMUTABLE}}' == '1';
     sshPublicKey: 'fake public key to enable sshd and open firewall'
   },
   software: {
-    packages: ['openssh-server-config-rootlogin'],
-    patterns: ['base', 'minimal_base', 'selinux'],
+    packages: ['openssh-server-config-rootlogin', 'curl'],
+    patterns: [
+      'base',
+      'selinux',
+      if is_immutable then 'immutable_base' else 'minimal_base',
+    ],
     extraRepositories: [
       {
         alias: "SLES::%s::product" % [version],
