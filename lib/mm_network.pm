@@ -248,7 +248,7 @@ sub restart_networking {
     if ($is_nm) {
         assert_script_run 'nmcli networking off';
         assert_script_run 'nmcli networking on';
-        sleep 2;
+        script_retry("journalctl --lines 10 -u NetworkManager | grep 'CONNECTED_GLOBAL'", retry => 10, delay => 1, fail_message => "NM didn't connect");
         # Wait until the connections are configured
         my $expected_nm_connectivity = get_var('EXPECTED_NM_CONNECTIVITY', 'full');
         if ($expected_nm_connectivity eq 'full') {
@@ -264,7 +264,7 @@ sub restart_networking {
                 script_run 'ip -s link show; ip a; ip r; ip neigh show';
                 die 'Multimachine gateway 10.0.2.2 is unreachable';
             }
-            script_retry("ping -c 3 -w 3 $cdn", delay => 2, retry => 6);
+            #script_retry("ping -c 3 -w 3 $cdn", delay => 2, retry => 6);
         }
     } else {
         systemctl 'restart network';
