@@ -251,11 +251,12 @@ sub restart_networking {
     my (%args) = @_;
     my $is_nm = $args{is_nm} // is_networkmanager();
     my $gw = $args{gw} // '10.0.2.2';
+    my $cdn = is_opensuse ? 'cdn.opensuse.org' : 'updates.suse.com';
 
     if ($is_nm) {
         assert_script_run 'nmcli networking off';
         assert_script_run 'nmcli networking on';
-        script_retry("journalctl --lines 10 -u NetworkManager | grep -E 'CONNECTED_(LOCAL|GLOBAL)'", retry => 20, delay => 1, fail_message => "NM didn't connect");
+        script_retry("journalctl --lines 10 -u NetworkManager | grep -E 'CONNECTED_(LOCAL|GLOBAL|SITE)'", retry => 20, delay => 1, fail_message => "NM didn't connect");
         # Wait until the connections are configured
         my $expected_nm_connectivity = get_var('EXPECTED_NM_CONNECTIVITY', 'full');
         if ($expected_nm_connectivity ne 'none') {
@@ -271,6 +272,7 @@ sub restart_networking {
                 script_run 'ip -s link show; ip a; ip r; ip neigh show';
                 die "Multimachine gateway $gw is unreachable";
             }
+            script_retry("ping -c 6 -w 6 $cdn", delay => 2, retry => 6);
         }
     } else {
         systemctl 'restart network';
