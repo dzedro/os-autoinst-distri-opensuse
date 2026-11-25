@@ -25,6 +25,7 @@ use utils;
 use console::ovs_utils;
 use version_utils;
 use package_utils 'install_package';
+use Utils::Logging 'save_and_upload_log';
 
 my $server_ip = "10.0.2.101";
 my $client_ip = "10.0.2.102";
@@ -187,6 +188,13 @@ sub run {
     assert_script_run("ping -I p1 -c 5 $server_vpn");
 
     barrier_wait 'end';
+}
+
+sub post_run_hook {
+    my ($self) = @_;
+    select_serial_terminal;
+    save_and_upload_log('journalctl --no-pager -ab -o short-precise', 'journal.txt');
+    $self->SUPER::post_run_hook;
 }
 
 1;
